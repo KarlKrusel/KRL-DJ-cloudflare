@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect, type RefObject } from "react";
 
-function useLazyPlay(ref: RefObject<HTMLVideoElement | null>) {
+function useLazyPlay(
+  ref: RefObject<HTMLVideoElement | null>,
+  containerRef?: RefObject<HTMLElement | null>
+) {
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
+    const target: Element = containerRef?.current ?? video;
     const tryPlay = () => video.play().catch(() => {});
 
-    // Synchronously check viewport — don't wait for the async IO callback on mount
-    const rect = video.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
     if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
       tryPlay();
     }
@@ -22,7 +25,7 @@ function useLazyPlay(ref: RefObject<HTMLVideoElement | null>) {
       },
       { rootMargin: "200px", threshold: 0 }
     );
-    observer.observe(video);
+    observer.observe(target);
     return () => observer.disconnect();
   }, []);
 }
@@ -251,7 +254,8 @@ function Visuals() {
 function VideoCard({ title, src }: { title: string; src?: string }) {
   const [muted, setMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
-  useLazyPlay(videoRef);
+  const cardRef = useRef<HTMLDivElement>(null);
+  useLazyPlay(videoRef, cardRef);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -261,7 +265,7 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all">
+    <div ref={cardRef} className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all">
       {src ? (
         <div className="relative">
           <video
@@ -271,7 +275,7 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
             muted
             playsInline
             preload="none"
-            className="w-full aspect-video"
+            className="w-full"
           />
           <button
             onClick={toggleMute}
