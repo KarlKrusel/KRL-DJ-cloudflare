@@ -1,3 +1,4 @@
+import { HeadContent, Scripts } from "@tanstack/react-start";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -5,6 +6,7 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from "@tanstack/react-router";
+import "../styles.css";
 
 function NotFoundComponent() {
   return (
@@ -73,8 +75,27 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-    </QueryClientProvider>
+    <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>KRL — Open-Format DJ | Grand Rapids</title>
+        <meta name="description" content="KRL (Karl Krusel) — Grand Rapids based open-format DJ. Mixes, custom visuals, and professional sound for bars, clubs, and private events." />
+        <meta property="og:title" content="KRL — Open-Format DJ | Grand Rapids" />
+        <meta property="og:description" content="Open-format DJ, custom visuals, and professional sound. Book KRL for your next event." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+        <HeadContent />
+      </head>
+      <body>
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
+        <Scripts />
+      </body>
+    </html>
   );
 }
