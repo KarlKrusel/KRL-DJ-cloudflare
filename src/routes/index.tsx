@@ -6,20 +6,25 @@ function useLazyPlay(ref: RefObject<HTMLVideoElement | null>) {
     const video = ref.current;
     if (!video) return;
     const tryPlay = () => video.play().catch(() => {});
-    if (typeof IntersectionObserver === "undefined") {
+
+    // Synchronously check viewport — don't wait for the async IO callback on mount
+    const rect = video.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
       tryPlay();
-      return;
     }
+
+    if (typeof IntersectionObserver === "undefined") return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) tryPlay();
         else video.pause();
       },
-      { rootMargin: "50px", threshold: 0.1 }
+      { rootMargin: "200px", threshold: 0 }
     );
     observer.observe(video);
     return () => observer.disconnect();
-  }, [ref]);
+  }, []);
 }
 import {
   Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
@@ -189,7 +194,7 @@ function VisualCard({ title, desc, src }: { title: string; desc: string; src: st
           loop
           muted
           playsInline
-          preload="none"
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -265,7 +270,7 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
             loop
             muted
             playsInline
-            preload="none"
+            preload="metadata"
             className="w-full"
           />
           <button
