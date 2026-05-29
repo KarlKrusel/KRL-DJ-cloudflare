@@ -47,6 +47,7 @@ const IG = "https://www.instagram.com/karlkrusel/";
 const SC = "https://soundcloud.com/karlkrusel";
 
 function Nav() {
+  const [open, setOpen] = useState(false);
   const links = [
     ["About", "#about"], ["Offer", "#offer"], ["Visuals", "#visuals"],
     ["Videos", "#videos"], ["Mixes", "#mixes"], ["Contact", "#contact"],
@@ -62,10 +63,35 @@ function Nav() {
             <a key={h} href={h} className="hover:text-foreground transition-colors">{l}</a>
           ))}
         </nav>
-        <a href="#contact" className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition">
-          Book
-        </a>
+        <div className="flex items-center gap-3">
+          <a href="#contact" className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition">
+            Book
+          </a>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "opacity-0" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
+        </div>
       </div>
+      {open && (
+        <nav className="md:hidden border-t border-border bg-background/95 backdrop-blur-md">
+          {links.map(([l, h]) => (
+            <a
+              key={h}
+              href={h}
+              onClick={() => setOpen(false)}
+              className="block px-5 py-3.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors"
+            >
+              {l}
+            </a>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
