@@ -23,7 +23,7 @@ function useLazyPlay(
         if (entry.isIntersecting) tryPlay();
         else video.pause();
       },
-      { rootMargin: "200px", threshold: 0 }
+      { rootMargin: "0px", threshold: 0 }
     );
     observer.observe(target);
     return () => observer.disconnect();
