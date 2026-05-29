@@ -194,7 +194,7 @@ function VisualCard({ title, desc, src }: { title: string; desc: string; src: st
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -270,8 +270,8 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
             loop
             muted
             playsInline
-            preload="metadata"
-            className="w-full"
+            preload="none"
+            className="w-full aspect-video"
           />
           <button
             onClick={toggleMute}
