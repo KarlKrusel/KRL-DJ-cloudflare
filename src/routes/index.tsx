@@ -1,5 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, type RefObject } from "react";
+
+function useLazyPlay(ref: RefObject<HTMLVideoElement | null>) {
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const tryPlay = () => video.play().catch(() => {});
+    if (typeof IntersectionObserver === "undefined") {
+      tryPlay();
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) tryPlay();
+        else video.pause();
+      },
+      { rootMargin: "50px", threshold: 0.1 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [ref]);
+}
 import {
   Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
   Disc3, Headphones, Calendar, Send, ExternalLink, Volume2, VolumeX,
@@ -157,12 +178,14 @@ function Offer() {
 }
 
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useLazyPlay(videoRef);
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
       <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
         <video
+          ref={videoRef}
           src={src}
-          autoPlay
           loop
           muted
           playsInline
@@ -223,6 +246,7 @@ function Visuals() {
 function VideoCard({ title, src }: { title: string; src?: string }) {
   const [muted, setMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  useLazyPlay(videoRef);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -238,7 +262,6 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
           <video
             ref={videoRef}
             src={src}
-            autoPlay
             loop
             muted
             playsInline
