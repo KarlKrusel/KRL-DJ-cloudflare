@@ -267,8 +267,8 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
 
 function Videos() {
   const items = [
-    { title: "Live at The Grand Woods Lounge", src: vid("grand_woods_lounge.mov") },
-    { title: "Crowd Reaction Clip", src: vid("crowd_reaction.mov") },
+    { title: "Live at The Grand Woods Lounge", src: vid("grand_woods_lounge.mp4") },
+    { title: "Crowd Reaction Clip", src: vid("crowd_reaction.mp4") },
     { title: "Behind the Decks", src: vid("behind_the_decks.mp4") },
     { title: "Crowd Clip", src: vid("crowd_clip.mp4") },
   ];
