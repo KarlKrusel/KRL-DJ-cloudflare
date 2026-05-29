@@ -1,30 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
-
-function useLazyVideo(src: string) {
-  const ref = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
-    if (typeof IntersectionObserver === "undefined") {
-      video.src = src;
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          video.src = src;
-          video.load();
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px" }
-    );
-    observer.observe(video);
-    return () => observer.disconnect();
-  }, [src]);
-  return ref;
-}
+import { useState, useRef } from "react";
 import {
   Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
   Disc3, Headphones, Calendar, Send, ExternalLink, Volume2, VolumeX,
@@ -182,16 +157,16 @@ function Offer() {
 }
 
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
-  const videoRef = useLazyVideo(src);
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
       <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
         <video
-          ref={videoRef}
+          src={src}
           autoPlay
           loop
           muted
           playsInline
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -247,7 +222,7 @@ function Visuals() {
 
 function VideoCard({ title, src }: { title: string; src?: string }) {
   const [muted, setMuted] = useState(true);
-  const videoRef = useLazyVideo(src ?? "");
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -262,10 +237,12 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
         <div className="relative">
           <video
             ref={videoRef}
+            src={src}
             autoPlay
             loop
             muted
             playsInline
+            preload="none"
             className="w-full"
           />
           <button
