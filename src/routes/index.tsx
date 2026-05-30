@@ -1,33 +1,52 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect, type RefObject } from "react";
 
-function useLazyPlay(
-  ref: RefObject<HTMLVideoElement | null>,
+function useLazyVideo(
+  src: string,
   containerRef?: RefObject<HTMLElement | null>
 ) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [activeSrc, setActiveSrc] = useState<string | undefined>();
+  const loaded = useRef(false);
+
   useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
+    const video = videoRef.current;
+    if (!video || !src) return;
     const target: Element = containerRef?.current ?? video;
-    const tryPlay = () => video.play().catch(() => {});
+
+    const enter = () => {
+      if (!loaded.current) {
+        loaded.current = true;
+        setActiveSrc(src);
+        // play() fired by the activeSrc effect after React sets src on the element
+      } else {
+        video.play().catch(() => {});
+      }
+    };
 
     const rect = target.getBoundingClientRect();
     if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
-      tryPlay();
+      enter();
     }
 
-    if (typeof IntersectionObserver === "undefined") return;
+    if (typeof IntersectionObserver === "undefined") {
+      enter();
+      return;
+    }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) tryPlay();
-        else video.pause();
-      },
-      { rootMargin: "0px", threshold: 0 }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) enter(); else video.pause(); },
+      { threshold: 0 }
     );
-    observer.observe(target);
-    return () => observer.disconnect();
+    io.observe(target);
+    return () => io.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (activeSrc) videoRef.current?.play().catch(() => {});
+  }, [activeSrc]);
+
+  return { videoRef, activeSrc };
 }
 import {
   Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
@@ -212,18 +231,16 @@ function Offer() {
 }
 
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useLazyPlay(videoRef);
+  const { videoRef, activeSrc } = useLazyVideo(src);
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
       <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
         <video
           ref={videoRef}
-          src={src}
+          src={activeSrc}
           loop
           muted
           playsInline
-          preload="none"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -279,9 +296,8 @@ function Visuals() {
 
 function VideoCard({ title, src }: { title: string; src?: string }) {
   const [muted, setMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  useLazyPlay(videoRef, cardRef);
+  const { videoRef, activeSrc } = useLazyVideo(src ?? "", cardRef);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -296,11 +312,10 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
         <div className="relative">
           <video
             ref={videoRef}
-            src={src}
+            src={activeSrc}
             loop
             muted
             playsInline
-            preload="none"
             className="w-full"
           />
           <button
