@@ -6,34 +6,37 @@ function useLazyVideo(
   containerRef?: RefObject<HTMLElement | null>
 ) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const loaded = useRef(false);
+  const activated = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !src) return;
-    const target: Element = containerRef?.current ?? video;
+    const target: Element = (containerRef?.current as Element | null) ?? video;
 
-    const enter = () => {
-      if (!loaded.current) {
-        loaded.current = true;
-        video.src = src; // set directly — no React render cycle needed
-      }
+    const activate = () => {
+      if (activated.current) return;
+      activated.current = true;
+      video.src = src;
+      video.load();
       video.play().catch(() => {});
     };
 
+    const enter = () => {
+      activate();
+      if (video.paused) video.play().catch(() => {});
+    };
+
+    // Sync check — play immediately if already in view, no async IO wait
     const rect = target.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
-      enter();
+    if (rect.top < window.innerHeight + 300 && rect.bottom > -300) {
+      activate();
     }
 
-    if (typeof IntersectionObserver === "undefined") {
-      enter();
-      return;
-    }
+    if (typeof IntersectionObserver === "undefined") return;
 
     const io = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) enter(); else video.pause(); },
-      { threshold: 0 }
+      { threshold: 0, rootMargin: "300px 0px" }
     );
     io.observe(target);
     return () => io.disconnect();
@@ -233,6 +236,7 @@ function VisualCard({ title, desc, src }: { title: string; desc: string; src: st
           loop
           muted
           playsInline
+          preload="none"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -301,18 +305,19 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
   return (
     <div ref={cardRef} className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all">
       {src ? (
-        <div className="relative">
+        <div className="relative aspect-video bg-black">
           <video
             ref={videoRef}
             poster={poster}
             loop
             muted
             playsInline
-            className="w-full"
+            preload="none"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           <button
             onClick={toggleMute}
-            className="absolute bottom-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
+            className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
           >
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
