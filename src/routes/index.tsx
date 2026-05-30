@@ -72,8 +72,7 @@ export const Route = createFileRoute("/")({
   component: KRLPortfolio,
 });
 
-const BASE = import.meta.env.BASE_URL;
-const vid = (file: string) => `${BASE}videos/${file}`;
+const vid = (file: string) => `https://pub-2b79e8df89e84e759954039d570bd5c7.r2.dev/${file}`;
 
 const EMAIL = "KRUSEL.KARL@GMAIL.COM";
 const PHONE = "231-493-1156";
