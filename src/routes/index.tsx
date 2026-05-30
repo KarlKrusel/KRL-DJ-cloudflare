@@ -10,15 +10,20 @@ function useLazyVideo(
 
   useEffect(() => {
     const video = videoRef.current;
+    const name = src.split("/").pop() ?? src;
+    console.log(`[krl-video] mount — ${name} | video=${!!video} src=${!!src}`);
     if (!video || !src) return;
     const target: Element = (containerRef?.current as Element | null) ?? video;
 
     const activate = () => {
       if (activated.current) return;
       activated.current = true;
+      console.log(`[krl-video] activate — ${name}`);
       video.src = src;
       video.load();
-      video.play().catch(() => {});
+      video.play()
+        .then(() => console.log(`[krl-video] playing — ${name}`))
+        .catch((e: unknown) => console.error(`[krl-video] play failed — ${name}`, e));
     };
 
     const enter = () => {
@@ -26,16 +31,20 @@ function useLazyVideo(
       if (video.paused) video.play().catch(() => {});
     };
 
-    // Sync check — play immediately if already in view, no async IO wait
     const rect = target.getBoundingClientRect();
+    console.log(`[krl-video] rect — ${name} top=${Math.round(rect.top)} bottom=${Math.round(rect.bottom)} vh=${window.innerHeight}`);
     if (rect.top < window.innerHeight + 300 && rect.bottom > -300) {
+      console.log(`[krl-video] in viewport on mount — ${name}`);
       activate();
     }
 
     if (typeof IntersectionObserver === "undefined") return;
 
     const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) enter(); else video.pause(); },
+      ([e]) => {
+        console.log(`[krl-video] IO — ${name} intersecting=${e.isIntersecting}`);
+        if (e.isIntersecting) enter(); else video.pause();
+      },
       { threshold: 0, rootMargin: "300px 0px" }
     );
     io.observe(target);
