@@ -1,57 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect, type RefObject } from "react";
 
-function useLazyVideo(
-  src: string,
-  containerRef?: RefObject<HTMLElement | null>
-) {
+function useLazyVideo(containerRef?: RefObject<HTMLElement | null>) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const activated = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
-    const name = src.split("/").pop() ?? src;
-    console.log(`[krl-video] mount — ${name} | video=${!!video} src=${!!src}`);
-    if (!video || !src) return;
+    if (!video) return;
     const target: Element = (containerRef?.current as Element | null) ?? video;
 
-    const activate = () => {
-      if (activated.current) return;
-      activated.current = true;
-      console.log(`[krl-video] activate — ${name}`);
-      // Set muted as a DOM property — React's muted prop doesn't always write
-      // the HTML attribute, and Safari checks the attribute for autoplay policy.
-      video.muted = true;
-      video.src = src;
-      // iOS Safari can reject play() immediately on first load before any data
-      // arrives. Add a canplay listener so we retry once the browser is ready.
-      video.addEventListener("canplay", () => video.play().catch(() => {}), { once: true });
-      video.play()
-        .then(() => console.log(`[krl-video] playing — ${name}`))
-        .catch((e: unknown) => console.error(`[krl-video] play failed — ${name}`, e));
-    };
-
     const enter = () => {
-      activate();
-      if (video.paused && video.readyState >= 1) video.play().catch(() => {});
+      // Set muted as DOM property — Safari checks the property, not just the React prop
+      video.muted = true;
+      if (video.paused) video.play().catch(() => {});
     };
 
     const rect = target.getBoundingClientRect();
-    console.log(`[krl-video] rect — ${name} top=${Math.round(rect.top)} bottom=${Math.round(rect.bottom)} vh=${window.innerHeight}`);
-    if (rect.top < window.innerHeight + 300 && rect.bottom > -300) {
-      console.log(`[krl-video] in viewport on mount — ${name}`);
-      activate();
-    }
+    if (rect.top < window.innerHeight + 300 && rect.bottom > -300) enter();
 
     if (typeof IntersectionObserver === "undefined") return;
 
     const io = new IntersectionObserver(
       ([e]) => {
-        console.log(`[krl-video] IO — ${name} intersecting=${e.isIntersecting} readyState=${video.readyState}`);
         if (e.isIntersecting) {
           enter();
         } else if (video.readyState >= 2) {
-          // Only pause once the video has data — never abort an in-flight initial fetch
           video.pause();
         }
       },
@@ -245,16 +218,17 @@ function Offer() {
 }
 
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
-  const videoRef = useLazyVideo(src);
+  const videoRef = useLazyVideo();
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
       <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
         <video
           ref={videoRef}
+          src={src}
           loop
           muted
           playsInline
-          preload="none"
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
         <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
@@ -311,7 +285,7 @@ function Visuals() {
 function VideoCard({ title, src, poster }: { title: string; src?: string; poster?: string }) {
   const [muted, setMuted] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
-  const videoRef = useLazyVideo(src ?? "", cardRef);
+  const videoRef = useLazyVideo(cardRef);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -326,11 +300,12 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
         <div className="relative bg-black">
           <video
             ref={videoRef}
+            src={src}
             poster={poster}
             loop
             muted
             playsInline
-            preload="none"
+            preload="metadata"
             className="w-full block"
           />
           <button
