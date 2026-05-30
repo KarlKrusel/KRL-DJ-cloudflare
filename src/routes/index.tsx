@@ -319,7 +319,7 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
   return (
     <div ref={cardRef} className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all">
       {src ? (
-        <div className="relative aspect-video bg-black">
+        <div className="relative bg-black">
           <video
             ref={videoRef}
             poster={poster}
@@ -327,7 +327,7 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
             muted
             playsInline
             preload="none"
-            className="absolute inset-0 w-full h-full object-contain"
+            className="w-full block"
           />
           <button
             onClick={toggleMute}
