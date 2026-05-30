@@ -20,7 +20,8 @@ function useLazyVideo(
       activated.current = true;
       console.log(`[krl-video] activate — ${name}`);
       video.src = src;
-      video.load();
+      // No explicit load() — play() triggers the fetch; load() before play() causes
+      // an AbortError in Firefox because it resets the element mid-play-request.
       video.play()
         .then(() => console.log(`[krl-video] playing — ${name}`))
         .catch((e: unknown) => console.error(`[krl-video] play failed — ${name}`, e));
@@ -28,7 +29,7 @@ function useLazyVideo(
 
     const enter = () => {
       activate();
-      if (video.paused) video.play().catch(() => {});
+      if (video.paused && video.readyState >= 1) video.play().catch(() => {});
     };
 
     const rect = target.getBoundingClientRect();
