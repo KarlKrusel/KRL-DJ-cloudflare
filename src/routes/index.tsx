@@ -42,8 +42,13 @@ function useLazyVideo(
 
     const io = new IntersectionObserver(
       ([e]) => {
-        console.log(`[krl-video] IO — ${name} intersecting=${e.isIntersecting}`);
-        if (e.isIntersecting) enter(); else video.pause();
+        console.log(`[krl-video] IO — ${name} intersecting=${e.isIntersecting} readyState=${video.readyState}`);
+        if (e.isIntersecting) {
+          enter();
+        } else if (video.readyState >= 2) {
+          // Only pause once the video has data — never abort an in-flight initial fetch
+          video.pause();
+        }
       },
       { threshold: 0, rootMargin: "300px 0px" }
     );
