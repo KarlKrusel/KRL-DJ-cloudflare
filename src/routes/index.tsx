@@ -6,7 +6,6 @@ function useLazyVideo(
   containerRef?: RefObject<HTMLElement | null>
 ) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [activeSrc, setActiveSrc] = useState<string | undefined>();
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -17,11 +16,9 @@ function useLazyVideo(
     const enter = () => {
       if (!loaded.current) {
         loaded.current = true;
-        setActiveSrc(src);
-        // play() fired by the activeSrc effect after React sets src on the element
-      } else {
-        video.play().catch(() => {});
+        video.src = src; // set directly — no React render cycle needed
       }
+      video.play().catch(() => {});
     };
 
     const rect = target.getBoundingClientRect();
@@ -42,11 +39,7 @@ function useLazyVideo(
     return () => io.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (activeSrc) videoRef.current?.play().catch(() => {});
-  }, [activeSrc]);
-
-  return { videoRef, activeSrc };
+  return videoRef;
 }
 import {
   Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
@@ -231,13 +224,12 @@ function Offer() {
 }
 
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
-  const { videoRef, activeSrc } = useLazyVideo(src);
+  const videoRef = useLazyVideo(src);
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
       <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
         <video
           ref={videoRef}
-          src={activeSrc}
           loop
           muted
           playsInline
@@ -297,7 +289,7 @@ function Visuals() {
 function VideoCard({ title, src, poster }: { title: string; src?: string; poster?: string }) {
   const [muted, setMuted] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { videoRef, activeSrc } = useLazyVideo(src ?? "", cardRef);
+  const videoRef = useLazyVideo(src ?? "", cardRef);
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -312,7 +304,6 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
         <div className="relative">
           <video
             ref={videoRef}
-            src={activeSrc}
             poster={poster}
             loop
             muted
