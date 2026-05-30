@@ -19,9 +19,13 @@ function useLazyVideo(
       if (activated.current) return;
       activated.current = true;
       console.log(`[krl-video] activate — ${name}`);
+      // Set muted as a DOM property — React's muted prop doesn't always write
+      // the HTML attribute, and Safari checks the attribute for autoplay policy.
+      video.muted = true;
       video.src = src;
-      // No explicit load() — play() triggers the fetch; load() before play() causes
-      // an AbortError in Firefox because it resets the element mid-play-request.
+      // iOS Safari can reject play() immediately on first load before any data
+      // arrives. Add a canplay listener so we retry once the browser is ready.
+      video.addEventListener("canplay", () => video.play().catch(() => {}), { once: true });
       video.play()
         .then(() => console.log(`[krl-video] playing — ${name}`))
         .catch((e: unknown) => console.error(`[krl-video] play failed — ${name}`, e));
