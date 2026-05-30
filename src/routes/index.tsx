@@ -294,7 +294,7 @@ function Visuals() {
   );
 }
 
-function VideoCard({ title, src }: { title: string; src?: string }) {
+function VideoCard({ title, src, poster }: { title: string; src?: string; poster?: string }) {
   const [muted, setMuted] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const { videoRef, activeSrc } = useLazyVideo(src ?? "", cardRef);
@@ -313,6 +313,7 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
           <video
             ref={videoRef}
             src={activeSrc}
+            poster={poster}
             loop
             muted
             playsInline
@@ -342,10 +343,10 @@ function VideoCard({ title, src }: { title: string; src?: string }) {
 
 function Videos() {
   const items = [
-    { title: "Live at The Grand Woods Lounge", src: vid("grand_woods_lounge.mp4") },
-    { title: "Crowd Reaction Clip", src: vid("crowd_reaction.mp4") },
-    { title: "Behind the Decks", src: vid("behind_the_decks.mp4") },
-    { title: "Crowd Clip", src: vid("crowd_clip.mp4") },
+    { title: "Live at The Grand Woods Lounge", src: vid("grand_woods_lounge.mp4"), poster: vid("poster_grand_woods_lounge.jpg") },
+    { title: "Crowd Reaction Clip", src: vid("crowd_reaction.mp4"), poster: vid("poster_crowd_reaction.jpg") },
+    { title: "Behind the Decks", src: vid("behind_the_decks.mp4"), poster: vid("poster_behind_the_decks.jpg") },
+    { title: "Crowd Clip", src: vid("crowd_clip.mp4"), poster: vid("poster_crowd_clip.jpg") },
   ];
   return (
     <Section id="videos" eyebrow="Live DJ Videos" title={<>Behind the decks. <span className="text-gradient">On the floor.</span></>}>
