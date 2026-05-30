@@ -327,7 +327,7 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
             muted
             playsInline
             preload="none"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-contain"
           />
           <button
             onClick={toggleMute}
