@@ -80,15 +80,27 @@ function RootComponent() {
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>KRL — Open-Format DJ | Grand Rapids</title>
-        <meta name="description" content="KRL (Karl Krusel) — Grand Rapids based open-format DJ. Mixes, custom visuals, and professional sound for bars, clubs, and private events." />
-        <meta property="og:title" content="KRL — Open-Format DJ | Grand Rapids" />
-        <meta property="og:description" content="Open-format DJ, custom visuals, and professional sound. Book KRL for your next event." />
+        <title>KRL — Open-Format DJ for Hire | Grand Rapids, MI</title>
+        <meta
+          name="description"
+          content="KRL (Karl Krusel) is a Grand Rapids open-format DJ who brings his own pro sound, custom visuals, and a packed dance floor. Book him for bars, clubs, weddings, and private events across Michigan."
+        />
+        <meta property="og:title" content="KRL — Open-Format DJ for Hire | Grand Rapids, MI" />
+        <meta
+          property="og:description"
+          content="Open-format DJ, custom visuals, and pro JBL sound. Read the room, pack the floor. Book KRL for your next night."
+        />
         <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary" />
+        <meta property="og:image" content="/photos/hero-1073.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="/photos/hero-1073.jpg" />
+        <meta name="theme-color" content="#05140a" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
         <HeadContent />
       </head>
       <body>

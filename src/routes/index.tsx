@@ -1,97 +1,172 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect, type RefObject } from "react";
-
-function useLazyVideo(containerRef?: RefObject<HTMLElement | null>) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const target: Element = (containerRef?.current as Element | null) ?? video;
-
-    const enter = () => {
-      // Set muted as DOM property — Safari checks the property, not just the React prop
-      video.muted = true;
-      if (video.paused) video.play().catch(() => {});
-    };
-
-    const rect = target.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 300 && rect.bottom > -300) enter();
-
-    if (typeof IntersectionObserver === "undefined") return;
-
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          enter();
-        } else if (video.readyState >= 2) {
-          video.pause();
-        }
-      },
-      { threshold: 0, rootMargin: "300px 0px" }
-    );
-    io.observe(target);
-    return () => io.disconnect();
-  }, []);
-
-  return videoRef;
-}
 import {
-  Music2, Video, Mail, Instagram, MapPin, Phone, Speaker, Sparkles,
-  Disc3, Headphones, Calendar, Send, ExternalLink, Volume2, VolumeX,
+  Music2,
+  Video,
+  Mail,
+  Instagram,
+  MapPin,
+  Phone,
+  Speaker,
+  Sparkles,
+  Disc3,
+  Headphones,
+  Calendar,
+  Send,
+  ExternalLink,
+  Volume2,
+  VolumeX,
+  ArrowRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: KRLPortfolio,
 });
 
-const vid = (file: string) => `https://pub-2b79e8df89e84e759954039d570bd5c7.r2.dev/${file}`;
-
+/* ---------- config you can edit fast ---------- */
 const EMAIL = "KRUSEL.KARL@GMAIL.COM";
 const PHONE = "231-493-1156";
-const IG = "https://www.instagram.com/karlkrusel/";
+const IG_HANDLE = "karlkrusel";
+const TT_HANDLE = "karlkrusel"; // KRL on TikTok (DJ KRL)
+const IG = `https://www.instagram.com/${IG_HANDLE}/`;
+const TT = `https://www.tiktok.com/@${TT_HANDLE}`;
 const SC = "https://soundcloud.com/karlkrusel";
 
+const vid = (file: string) => `https://pub-2b79e8df89e84e759954039d570bd5c7.r2.dev/${file}`;
+const photo = (file: string) => `/photos/${file}`;
+
+/* ---------- lazy autoplay video hook ---------- */
+function useLazyVideo(containerRef?: RefObject<HTMLElement | null>) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const target: Element = (containerRef?.current as Element | null) ?? video;
+    const enter = () => {
+      video.muted = true;
+      if (video.paused) video.play().catch(() => {});
+    };
+    const rect = target.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 300 && rect.bottom > -300) enter();
+    if (typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) enter();
+        else if (video.readyState >= 2) video.pause();
+      },
+      { threshold: 0, rootMargin: "300px 0px" },
+    );
+    io.observe(target);
+    return () => io.disconnect();
+  }, []);
+  return videoRef;
+}
+
+/* ---------- reveal-on-scroll wrapper ---------- */
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={
+        shown
+          ? { animation: `float-up 0.7s ease-out both`, animationDelay: `${delay}s` }
+          : { opacity: 0 }
+      }
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ---------- nav ---------- */
 function Nav() {
   const [open, setOpen] = useState(false);
   const links = [
-    ["About", "#about"], ["Offer", "#offer"], ["Visuals", "#visuals"],
-    ["Videos", "#videos"], ["Mixes", "#mixes"], ["Contact", "#contact"],
+    ["About", "#about"],
+    ["Book", "#book"],
+    ["Visuals", "#visuals"],
+    ["Videos", "#videos"],
+    ["Mixes", "#mixes"],
+    ["Socials", "#socials"],
   ];
   return (
-    <header className="fixed top-0 inset-x-0 z-50 glass">
+    <header className="fixed top-0 inset-x-0 z-50 glass-strong border-b border-primary/15">
       <div className="mx-auto max-w-6xl px-5 h-14 flex items-center justify-between">
-        <a href="#top" style={{ fontFamily: '"Tourner", var(--font-display)' }} className="font-bold tracking-widest text-2xl">
-          KRL<span className="text-gradient">.</span>
+        <a
+          href="#top"
+          style={{ fontFamily: '"Tourner", var(--font-display)' }}
+          className="font-bold tracking-widest text-2xl text-glow"
+        >
+          KRL
         </a>
-        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+        <nav className="hidden md:flex items-center gap-7 text-sm uppercase tracking-wider text-muted-foreground">
           {links.map(([l, h]) => (
-            <a key={h} href={h} className="hover:text-foreground transition-colors">{l}</a>
+            <a key={h} href={h} className="nav-link hover:text-primary transition-colors">
+              {l}
+            </a>
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <a href="#contact" className="text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition">
-            Book
+          <a
+            href="#contact"
+            className="hidden sm:inline-flex text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full bg-primary text-primary-foreground hover:shadow-glow transition"
+          >
+            Book a night
           </a>
           <button
             onClick={() => setOpen((o) => !o)}
             className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5"
             aria-label="Toggle menu"
           >
-            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "opacity-0" : ""}`} />
-            <span className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span
+              className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "rotate-45 translate-y-2" : ""}`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "opacity-0" : ""}`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-foreground transition-all duration-200 ${open ? "-rotate-45 -translate-y-2" : ""}`}
+            />
           </button>
         </div>
       </div>
       {open && (
-        <nav className="md:hidden border-t border-border bg-background/95 backdrop-blur-md">
-          {links.map(([l, h]) => (
+        <nav className="md:hidden border-t border-primary/15 bg-background/95 backdrop-blur-md">
+          {[...links, ["Book a night", "#contact"]].map(([l, h]) => (
             <a
               key={h}
               href={h}
               onClick={() => setOpen(false)}
-              className="block px-5 py-3.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors"
+              className="block px-5 py-3.5 text-sm uppercase tracking-wide text-muted-foreground hover:text-primary hover:bg-secondary/40 transition-colors"
             >
               {l}
             </a>
@@ -104,7 +179,7 @@ function Nav() {
 
 function Equalizer() {
   return (
-    <div className="flex items-end gap-1 h-10">
+    <div className="flex items-end gap-1 h-8">
       {[0.1, 0.3, 0.6, 0.2, 0.5, 0.8, 0.4].map((d, i) => (
         <span
           key={i}
@@ -116,112 +191,350 @@ function Equalizer() {
   );
 }
 
+/* ---------- hero: 1073 background, logo left, white glow ---------- */
 function Hero() {
   return (
-    <section id="top" className="relative min-h-screen flex items-center bg-hero overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-40 z-0" />
-      <div className="absolute top-1/3 -left-20 w-80 h-80 rounded-full bg-primary/20 blur-3xl animate-pulse-glow z-0" />
-      <div className="absolute bottom-10 right-0 w-96 h-96 rounded-full bg-accent/20 blur-3xl animate-pulse-glow z-0" style={{ animationDelay: "1s" }}/>
+    <section
+      id="top"
+      className="relative min-h-[100svh] flex items-center overflow-hidden bg-background"
+    >
+      {/* background photo 1073 */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={photo("hero-1073.jpg")}
+          alt="KRL behind the decks"
+          className="w-full h-full object-cover object-[70%_center] md:object-center animate-slow-zoom"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/45 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/25" />
+        <div className="absolute inset-0 bg-grid opacity-20 animate-grid-pan" />
+        <div className="absolute inset-0 scanlines opacity-20" />
+      </div>
+
+      {/* glow blobs */}
+      <div className="absolute top-1/4 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-3xl animate-pulse-glow z-0" />
+      <div className="absolute bottom-10 right-1/4 w-72 h-72 rounded-full bg-accent/15 blur-3xl animate-drift z-0" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-5 pt-28 pb-20 w-full">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-5">
           <Equalizer />
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Now Playing</span>
+          <span className="text-xs uppercase tracking-[0.35em] text-primary animate-flicker">
+            Now booking 2026
+          </span>
         </div>
-        <h1 style={{ fontFamily: '"Tourner", var(--font-display)' }} className="font-normal text-[28vw] md:text-[20rem] leading-none tracking-tighter">
-          <span className="text-gradient">KRL</span>
+
+        {/* logo, left side, white glow, Tourner font kept */}
+        <h1
+          style={{ fontFamily: '"Tourner", var(--font-impact)' }}
+          className="text-white animate-logo-glow text-[34vw] sm:text-[26vw] md:text-[20rem] leading-[0.8] tracking-tight"
+        >
+          KRL
         </h1>
-        <p className="mt-4 text-lg md:text-2xl font-medium text-foreground/90">
-          Open-Format DJ <span className="text-muted-foreground">/</span> Custom Visuals <span className="text-muted-foreground">/</span> Professional Sound
+
+        <p className="mt-4 font-impact text-2xl md:text-4xl uppercase tracking-wide text-foreground">
+          Open-format DJ. <span className="text-gradient">Professional sound. A full dance floor.</span>
         </p>
-        <p className="mt-6 max-w-2xl text-base md:text-lg text-muted-foreground leading-relaxed">
-          I'm Karl Krusel, professionally known as KRL. A Grand Rapids based DJ originally from Traverse City,
-          focused on creating the right atmosphere through music, visuals, and professional sound.
+        <p className="mt-5 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
+          I'm Karl Krusel, known as KRL. A Grand Rapids based DJ, originally from Traverse City. I bring
+          my own professional rig, read the room, and keep the energy right all night, whether it's a
+          bar, a club, a wedding, or a private event.
         </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <a href="#mixes" className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold shadow-glow hover:scale-[1.02] transition">
-            <Headphones className="w-4 h-4" /> Listen to Mixes
+
+        <div className="mt-9 flex flex-wrap gap-3">
+          <a
+            href="#contact"
+            className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm animate-glow-pulse hover:shadow-glow-strong hover:scale-[1.02] transition"
+          >
+            Book me <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
           </a>
-          <a href="#videos" className="inline-flex items-center gap-2 px-5 py-3 rounded-full glass font-semibold hover:bg-secondary transition">
-            <Video className="w-4 h-4" /> Watch Videos
+          <a
+            href="#mixes"
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full glass font-bold uppercase tracking-wider text-sm hover:border-primary/40 transition"
+          >
+            <Headphones className="w-4 h-4" /> Hear a mix
           </a>
-          <a href="#contact" className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-accent/50 text-foreground font-semibold hover:bg-accent/10 transition">
-            <Mail className="w-4 h-4" /> Contact Me
-          </a>
+        </div>
+
+        <div className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+          <MapPin className="w-4 h-4 text-primary" /> Grand Rapids, MI · available statewide
         </div>
       </div>
     </section>
   );
 }
 
-function Section({ id, eyebrow, title, children }: { id?: string; eyebrow: string; title: React.ReactNode; children: React.ReactNode }) {
+/* ---------- scrolling marquee ---------- */
+function Marquee() {
+  const items = [
+    "Open-Format",
+    "House",
+    "Drum & Bass",
+    "Dubstep",
+    "Top Hits",
+    "Throwbacks",
+    "Custom Visuals",
+    "Pro JBL Sound",
+    "Bars & Clubs",
+    "Weddings",
+    "Private Events",
+  ];
+  const row = [...items, ...items];
+  return (
+    <div className="relative overflow-hidden border-y border-primary/20 bg-primary/[0.04] py-4">
+      <div className="flex w-max animate-marquee whitespace-nowrap">
+        {row.map((t, i) => (
+          <span
+            key={i}
+            className="mx-6 font-impact uppercase text-xl md:text-2xl tracking-wide text-foreground/70 flex items-center gap-6"
+          >
+            {t} <span className="text-primary text-glow animate-spin-slow">✦</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- section shell ---------- */
+function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+}: {
+  id?: string;
+  eyebrow: string;
+  title: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section id={id} className="py-24 md:py-32 px-5">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-12">
-          <div className="text-xs uppercase tracking-[0.3em] text-primary mb-3">{eyebrow}</div>
-          <h2 className="text-3xl md:text-5xl font-display font-bold max-w-3xl">{title}</h2>
-        </div>
+        <Reveal className="mb-12">
+          <div className="text-xs uppercase tracking-[0.35em] text-primary mb-3 flex items-center gap-3">
+            <span className="h-px w-8 bg-primary" /> {eyebrow}
+          </div>
+          <h2 className="font-impact uppercase text-4xl md:text-6xl leading-[0.95] max-w-3xl">
+            {title}
+          </h2>
+        </Reveal>
         {children}
       </div>
     </section>
   );
 }
 
+/* ---------- full-bleed photo band ---------- */
+function PhotoBand({
+  src,
+  alt,
+  children,
+}: {
+  src: string;
+  alt: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="relative h-[42vh] md:h-[60vh] overflow-hidden">
+      <img
+        src={src}
+        alt={alt}
+        className="absolute inset-0 w-full h-full object-cover object-center"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-background/60" />
+      <div className="absolute inset-0 bg-grid opacity-20" />
+      {children && <div className="relative z-10 h-full flex items-center px-5">{children}</div>}
+    </div>
+  );
+}
+
+/* ---------- about ---------- */
 function About() {
   return (
-    <Section id="about" eyebrow="About" title={<>Reading the room. <span className="text-gradient">Owning the night.</span></>}>
-      <div className="grid md:grid-cols-3 gap-8 text-muted-foreground leading-relaxed">
-        <p className="text-lg text-foreground/90 md:col-span-2">
-          I'm an open-format DJ who knows how to connect with both younger and older crowds. My focus is reading the room,
-          keeping people engaged, and playing music that fits the setting — top hits, house, drum and bass, dubstep,
-          throwbacks, and crowd-friendly cuts depending on the venue and event.
-        </p>
-        <div className="glass rounded-xl p-6">
-          <div className="text-xs uppercase tracking-widest text-primary mb-2">Residency</div>
-          <div className="text-foreground font-semibold">The Grand Woods Lounge</div>
-          <div className="text-sm mt-1">Grand Rapids, MI — building crowd response and helping create a strong atmosphere night after night.</div>
-        </div>
+    <Section
+      id="about"
+      eyebrow="Who I am"
+      title={
+        <>
+          Reading the room. <span className="text-gradient">Setting the tone.</span>
+        </>
+      }
+    >
+      <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <Reveal>
+          <div className="relative rounded-xl overflow-hidden ring-glow">
+            <img
+              src={photo("portrait-1071.jpg")}
+              alt="KRL DJing"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+          </div>
+        </Reveal>
+        <Reveal delay={0.1} className="space-y-5 text-muted-foreground leading-relaxed">
+          <p className="text-lg text-foreground/90">
+            I've been DJing for about five years, the last one professionally. Bass and dubstep are
+            what I love most, but the majority of my work is open-format, which means I can play to
+            any crowd. Younger or older, I read what the room responds to and build the set around it.
+          </p>
+          <p>
+            Top hits, house, drum and bass, dubstep, and throwbacks, whatever fits the night. I hold a
+            residency at The Grand Woods Lounge in Grand Rapids and play bars and events across
+            Michigan. My focus stays on the crowd and the energy in the room, not on my screen.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            {[
+              ["5+ yrs", "behind the decks"],
+              ["Residency", "Grand Woods Lounge"],
+              ["Own rig", "pro JBL sound"],
+            ].map(([big, small]) => (
+              <div key={big} className="glass rounded-lg px-4 py-3">
+                <div className="font-impact uppercase text-xl text-primary leading-none">{big}</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                  {small}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </div>
     </Section>
   );
 }
 
+/* ---------- what I offer ---------- */
 const offerings = [
-  { icon: Disc3, title: "Open-Format DJ Sets", desc: "Reading the room and blending genres on the fly." },
-  { icon: Music2, title: "Bars & Clubs", desc: "High-energy nightlife performances built for the dance floor." },
-  { icon: Calendar, title: "Private Events", desc: "Weddings, parties, corporate — tailored to your crowd." },
-  { icon: Headphones, title: "Genre Range", desc: "House, DnB, dubstep, top hits, and throwbacks." },
-  { icon: Speaker, title: "Pro JBL Sound", desc: "Full professional sound system, ready for any room." },
-  { icon: Sparkles, title: "Custom Visuals & VFX", desc: "Visual loops tailored to themes, venues, and brands." },
+  {
+    icon: Disc3,
+    title: "Open-Format Sets",
+    desc: "Blending genres in real time to match the energy of the room.",
+  },
+  {
+    icon: Music2,
+    title: "Bars & Clubs",
+    desc: "High-energy nightlife sets built to pack the floor and keep it moving.",
+  },
+  {
+    icon: Calendar,
+    title: "Private Events",
+    desc: "Weddings, parties, and corporate nights, tailored to your crowd.",
+  },
+  {
+    icon: Headphones,
+    title: "Every Genre",
+    desc: "House, drum and bass, dubstep, top hits, and throwbacks.",
+  },
+  {
+    icon: Speaker,
+    title: "Pro JBL Sound",
+    desc: "I bring my own full sound system. Two mids plus an 18 inch sub.",
+  },
+  {
+    icon: Sparkles,
+    title: "Custom Visuals",
+    desc: "Animated loops made for your theme, venue, logo, or brand.",
+  },
 ];
 
 function Offer() {
   return (
-    <Section id="offer" eyebrow="What I Offer" title={<>A full <span className="text-gradient">audio-visual</span> experience.</>}>
+    <Section
+      id="offer"
+      eyebrow="What you get"
+      title={
+        <>
+          A complete <span className="text-gradient">audio-visual</span> experience.
+        </>
+      }
+    >
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {offerings.map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="group glass rounded-xl p-6 hover:border-primary/40 transition-all hover:-translate-y-1">
-            <Icon className="w-7 h-7 text-primary mb-4 group-hover:text-accent transition-colors" />
-            <h3 className="font-display font-semibold text-lg mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-          </div>
+        {offerings.map(({ icon: Icon, title, desc }, i) => (
+          <Reveal key={title} delay={i * 0.05}>
+            <div className="group glass rounded-xl p-6 h-full hover:border-primary/50 hover:-translate-y-1 hover:shadow-glow transition-all">
+              <Icon className="w-7 h-7 text-primary mb-4 group-hover:scale-110 group-hover:text-accent transition" />
+              <h3 className="font-impact uppercase text-lg tracking-wide mb-2">{title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          </Reveal>
         ))}
-        <div className="glass rounded-xl p-6 border-primary/30 bg-gradient-to-br from-primary/10 to-accent/10">
-          <div className="text-xs uppercase tracking-widest text-primary mb-2">Setup</div>
-          <div className="font-display font-semibold">AlphaTheta XDJ-AZ</div>
-          <p className="text-sm text-muted-foreground mt-1">Flagship club-level DJ system.</p>
-        </div>
       </div>
     </Section>
   );
 }
 
+/* ---------- booking / where I play (the gig-focus centerpiece) ---------- */
+function Book() {
+  const rows = [
+    { venue: "The Grand Woods Lounge", city: "Grand Rapids, MI", tag: "Residency" },
+    { venue: "VI Grill", city: "Open format residency", tag: "Residency" },
+    { venue: "The B.O.B.", city: "Grand Rapids, MI", tag: "Open Format" },
+    { venue: "Bars & Nightlife", city: "Across Michigan", tag: "Open Format" },
+    { venue: "Weddings & Private Parties", city: "Statewide", tag: "Custom Sets" },
+    { venue: "Your Venue Here", city: "Let's make it happen", tag: "Booking Now" },
+  ];
+  return (
+    <section id="book" className="relative overflow-hidden">
+      <PhotoBand src={photo("crowd-1075.jpg")} alt="Crowd at a KRL set">
+        <div className="mx-auto max-w-6xl w-full">
+          <Reveal>
+            <div className="text-xs uppercase tracking-[0.35em] text-primary mb-3 flex items-center gap-3">
+              <span className="h-px w-8 bg-primary" /> Where I play
+            </div>
+            <h2 className="font-impact uppercase text-4xl md:text-6xl leading-[0.95] max-w-3xl text-glow">
+              Looking to <span className="text-gradient">book a DJ?</span>
+            </h2>
+          </Reveal>
+        </div>
+      </PhotoBand>
+
+      <div className="px-5 pb-24 md:pb-32 -mt-8 relative z-10">
+        <div className="mx-auto max-w-6xl">
+          <Reveal className="glass-strong rounded-2xl overflow-hidden divide-y divide-primary/10">
+            {rows.map((r) => (
+              <a
+                key={r.venue}
+                href="#contact"
+                className="group flex items-center justify-between gap-4 px-5 md:px-8 py-5 hover:bg-primary/5 transition"
+              >
+                <div className="min-w-0">
+                  <div className="font-impact uppercase text-lg md:text-2xl tracking-wide truncate group-hover:text-primary transition">
+                    {r.venue}
+                  </div>
+                  <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">
+                    {r.city}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="hidden sm:inline text-[10px] md:text-xs uppercase tracking-widest text-primary border border-primary/40 rounded-full px-3 py-1">
+                    {r.tag}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs md:text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition">
+                    Inquire <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </Reveal>
+          <Reveal delay={0.1} className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Have a date and venue in mind? Reach out and we'll lock in the details.
+            </p>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- visuals ---------- */
 function VisualCard({ title, desc, src }: { title: string; desc: string; src: string }) {
   const videoRef = useLazyVideo();
   return (
     <div className="group rounded-xl overflow-hidden glass hover:border-accent/40 transition-all">
-      <div className="aspect-video relative bg-gradient-to-br from-accent/30 via-primary/20 to-background overflow-hidden">
+      <div className="aspect-video relative bg-gradient-to-br from-primary/30 via-accent/10 to-background overflow-hidden">
         <video
           ref={videoRef}
           src={src}
@@ -231,10 +544,12 @@ function VisualCard({ title, desc, src }: { title: string; desc: string; src: st
           preload="metadata"
           className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
         />
-        <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">Visual Loop</span>
+        <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-widest text-white/70 z-10">
+          Visual Loop
+        </span>
       </div>
       <div className="p-5">
-        <h3 className="font-display font-semibold">{title}</h3>
+        <h3 className="font-impact uppercase tracking-wide">{title}</h3>
         <p className="text-sm text-muted-foreground mt-1">{desc}</p>
       </div>
     </div>
@@ -245,58 +560,73 @@ function Visuals() {
   return (
     <Section
       id="visuals"
-      eyebrow="Custom Visuals & VFX"
-      title={<>More than music — <span className="text-gradient">a full atmosphere.</span></>}
+      eyebrow="Custom visuals & VFX"
+      title={
+        <>
+          More than music. <span className="text-gradient">A complete atmosphere.</span>
+        </>
+      }
     >
       <p className="text-muted-foreground max-w-3xl mb-10 leading-relaxed">
-        I create custom visual loops that run on venue TVs, projectors, and screens during a set. Built to match
-        a holiday, theme, event, logo, or brand — the goal is a complete atmosphere, not just a playlist.
+        I create custom visual loops that run on venue TVs, projectors, and screens during a set. I
+        can build them around a holiday, a theme, your event, your logo, or your brand, so every part
+        of the room works together, from the music to the screens.
       </p>
       <div className="grid md:grid-cols-3 gap-5">
-        <VisualCard
-          title="St. Patrick's Day Loop"
-          desc="Themed holiday visuals blending the venue's logo and KRL branding into a seamless green-soaked loop."
-          src={vid("krl_saint_paddies_v2_tv_loop_30s_falling_soft.mp4")}
-        />
-        <VisualCard
-          title="Branded Venue Loop"
-          desc="Custom visuals built around your logo and brand identity."
-          src={vid("woods_logo_sample_krl.mp4")}
-        />
-        <VisualCard
-          title="Cosmic Gradient Loop"
-          desc="Abstract VFX designed for immersive event atmospheres."
-          src={vid("KRL_cosmic_gradient.mp4")}
-        />
+        <Reveal>
+          <VisualCard
+            title="St. Patrick's Day Loop"
+            desc="Themed holiday visuals blending the venue logo and KRL branding into a green-soaked loop."
+            src={vid("krl_saint_paddies_v2_tv_loop_30s_falling_soft.mp4")}
+          />
+        </Reveal>
+        <Reveal delay={0.05}>
+          <VisualCard
+            title="Branded Venue Loop"
+            desc="Custom visuals built around your logo and brand identity."
+            src={vid("woods_logo_sample_krl.mp4")}
+          />
+        </Reveal>
+        <Reveal delay={0.1}>
+          <VisualCard
+            title="Cosmic Gradient Loop"
+            desc="Abstract VFX for immersive event atmospheres."
+            src={vid("KRL_cosmic_gradient.mp4")}
+          />
+        </Reveal>
       </div>
       <div className="flex justify-center mt-5">
         <div className="w-full md:w-1/3">
-          <VisualCard
-            title="KRL — Kid Cudi Edit"
-            desc="Custom VFX cut to a Kid Cudi set."
-            src={vid("krl_kid_cudi.mp4")}
-          />
+          <Reveal delay={0.15}>
+            <VisualCard
+              title="KRL — Kid Cudi Edit"
+              desc="Custom VFX cut to a Kid Cudi set."
+              src={vid("krl_kid_cudi.mp4")}
+            />
+          </Reveal>
         </div>
       </div>
     </Section>
   );
 }
 
+/* ---------- videos ---------- */
 function VideoCard({ title, src, poster }: { title: string; src?: string; poster?: string }) {
   const [muted, setMuted] = useState(true);
   const cardRef = useRef<HTMLDivElement>(null);
   const videoRef = useLazyVideo(cardRef);
-
   const toggleMute = () => {
     setMuted((m) => {
       if (videoRef.current) videoRef.current.muted = !m;
       return !m;
     });
   };
-
   return (
-    <div ref={cardRef} className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all">
-      {src ? (
+    <div
+      ref={cardRef}
+      className="rounded-xl overflow-hidden glass group hover:border-primary/40 transition-all"
+    >
+      {src && (
         <div className="relative bg-black">
           <video
             ref={videoRef}
@@ -311,20 +641,14 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
           <button
             onClick={toggleMute}
             className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
+            aria-label={muted ? "Unmute" : "Mute"}
           >
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
         </div>
-      ) : (
-        <div className="aspect-video relative bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-          <div className="absolute inset-0 bg-grid opacity-20" />
-          <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-glow group-hover:scale-110 transition">
-            <div className="w-0 h-0 border-l-[14px] border-l-primary-foreground border-y-[9px] border-y-transparent ml-1" />
-          </div>
-        </div>
       )}
       <div className="p-4">
-        <h3 className="font-display font-semibold text-sm">{title}</h3>
+        <h3 className="font-impact uppercase tracking-wide text-sm">{title}</h3>
       </div>
     </div>
   );
@@ -332,33 +656,63 @@ function VideoCard({ title, src, poster }: { title: string; src?: string; poster
 
 function Videos() {
   const items = [
-    { title: "Live at The Grand Woods Lounge", src: vid("grand_woods_lounge.mp4"), poster: vid("poster_grand_woods_lounge.jpg") },
-    { title: "Crowd Reaction Clip", src: vid("crowd_reaction.mp4"), poster: vid("poster_crowd_reaction.jpg") },
-    { title: "Behind the Decks", src: vid("behind_the_decks.mp4"), poster: vid("poster_behind_the_decks.jpg") },
+    {
+      title: "Live at The Grand Woods Lounge",
+      src: vid("grand_woods_lounge.mp4"),
+      poster: vid("poster_grand_woods_lounge.jpg"),
+    },
+    {
+      title: "Crowd Reaction Clip",
+      src: vid("crowd_reaction.mp4"),
+      poster: vid("poster_crowd_reaction.jpg"),
+    },
+    {
+      title: "Behind the Decks",
+      src: vid("behind_the_decks.mp4"),
+      poster: vid("poster_behind_the_decks.jpg"),
+    },
     { title: "Crowd Clip", src: vid("crowd_clip.mp4"), poster: vid("poster_crowd_clip.jpg") },
   ];
   return (
-    <Section id="videos" eyebrow="Live DJ Videos" title={<>Behind the decks. <span className="text-gradient">On the floor.</span></>}>
+    <Section
+      id="videos"
+      eyebrow="Live footage"
+      title={
+        <>
+          Recent sets. <span className="text-gradient">Live footage.</span>
+        </>
+      }
+    >
       <div className="grid sm:grid-cols-2 gap-6">
-        {items.map((item) => <VideoCard key={item.title} {...item} />)}
+        {items.map((item, i) => (
+          <Reveal key={item.title} delay={i * 0.05}>
+            <VideoCard {...item} />
+          </Reveal>
+        ))}
       </div>
     </Section>
   );
 }
 
-const SC_COLOR = "%2300cc66";
+/* ---------- mixes ---------- */
+const SC_COLOR = "%2300e676";
 
 function MixCard({ title, url, embedUrl }: { title: string; url: string; embedUrl?: string }) {
   return (
     <div className="glass rounded-xl p-5 hover:border-primary/40 transition">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h3 className="font-display font-semibold">{title}</h3>
-          <p className="text-xs text-muted-foreground mt-1">SoundCloud Mix</p>
+          <h3 className="font-impact uppercase tracking-wide">{title}</h3>
+          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
+            SoundCloud Mix
+          </p>
         </div>
-        <Disc3 className="w-6 h-6 text-primary shrink-0 animate-spin" style={{ animationDuration: "6s" }} />
+        <Disc3
+          className="w-6 h-6 text-primary shrink-0 animate-spin"
+          style={{ animationDuration: "6s" }}
+        />
       </div>
-      {embedUrl ? (
+      {embedUrl && (
         <iframe
           width="100%"
           height="166"
@@ -367,13 +721,15 @@ function MixCard({ title, url, embedUrl }: { title: string; url: string; embedUr
           allow="autoplay"
           src={embedUrl}
           className="rounded-lg"
+          title={title}
         />
-      ) : (
-        <div className="h-[100px] rounded-lg border border-dashed border-border flex items-center justify-center bg-secondary/30">
-          <span className="text-xs text-muted-foreground">No embed available</span>
-        </div>
       )}
-      <a href={url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline">
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline uppercase tracking-wider"
+      >
         Open on SoundCloud <ExternalLink className="w-3 h-3" />
       </a>
     </div>
@@ -398,164 +754,322 @@ function Mixes() {
       embedUrl: `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/karlkrusel/krl-tapes-vol-1&color=${SC_COLOR}&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false`,
     },
   ];
-
   return (
-    <Section id="mixes" eyebrow="SoundCloud Mixes" title={<>Press play. <span className="text-gradient">Feel the set.</span></>}>
+    <Section
+      id="mixes"
+      eyebrow="Press play"
+      title={
+        <>
+          Hear how a <span className="text-gradient">set comes together.</span>
+        </>
+      }
+    >
       <div className="grid sm:grid-cols-2 gap-4">
-        {mixes.map((m) => <MixCard key={m.title} {...m} />)}
-        <a
-          href={SC}
-          target="_blank"
-          rel="noreferrer"
-          className="glass rounded-xl p-5 hover:border-primary/40 transition flex flex-col items-center justify-center gap-3 text-center group"
-        >
-          <Disc3 className="w-8 h-8 text-primary group-hover:text-accent transition animate-spin" style={{ animationDuration: "6s" }} />
-          <div>
-            <div className="font-display font-semibold">More Mixes</div>
-            <div className="text-sm text-muted-foreground mt-1">Check out the full catalogue on SoundCloud</div>
-          </div>
-          <span className="inline-flex items-center gap-1 text-xs text-primary group-hover:underline">
-            soundcloud.com/karlkrusel <ExternalLink className="w-3 h-3" />
-          </span>
-        </a>
+        {mixes.map((m, i) => (
+          <Reveal key={m.title} delay={i * 0.05}>
+            <MixCard {...m} />
+          </Reveal>
+        ))}
+        <Reveal delay={0.15}>
+          <a
+            href={SC}
+            target="_blank"
+            rel="noreferrer"
+            className="glass rounded-xl p-5 h-full hover:border-primary/40 transition flex flex-col items-center justify-center gap-3 text-center group"
+          >
+            <Disc3
+              className="w-8 h-8 text-primary group-hover:text-accent transition animate-spin"
+              style={{ animationDuration: "6s" }}
+            />
+            <div>
+              <div className="font-impact uppercase tracking-wide">More Mixes</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                The full catalogue lives on SoundCloud
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1 text-xs text-primary group-hover:underline uppercase tracking-wider">
+              soundcloud.com/karlkrusel <ExternalLink className="w-3 h-3" />
+            </span>
+          </a>
+        </Reveal>
       </div>
     </Section>
   );
 }
 
+/* ---------- socials: IG + TikTok follower embeds ---------- */
+function TikTokEmbed() {
+  useEffect(() => {
+    const existing = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
+    if (existing) existing.remove();
+    const s = document.createElement("script");
+    s.src = "https://www.tiktok.com/embed.js";
+    s.async = true;
+    document.body.appendChild(s);
+  }, []);
+  return (
+    <blockquote
+      className="tiktok-embed"
+      cite={TT}
+      data-unique-id={TT_HANDLE}
+      data-embed-type="creator"
+      style={{ maxWidth: "100%", minWidth: "288px", margin: 0 }}
+    >
+      <section>
+        <a target="_blank" rel="noreferrer" href={TT}>
+          @{TT_HANDLE}
+        </a>
+      </section>
+    </blockquote>
+  );
+}
+
+function Socials() {
+  return (
+    <Section
+      id="socials"
+      eyebrow="Stay connected"
+      title={
+        <>
+          Latest from <span className="text-gradient">the feed.</span>
+        </>
+      }
+    >
+      <div className="grid md:grid-cols-2 gap-6 items-start">
+        {/* Instagram follow card */}
+        <Reveal>
+          <a
+            href={IG}
+            target="_blank"
+            rel="noreferrer"
+            className="group block glass rounded-2xl p-7 hover:border-accent/50 transition h-full"
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg,#feda75,#d62976,#962fbf,#4f5bd5)" }}
+              >
+                <Instagram className="w-7 h-7 text-white" />
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-accent group-hover:underline">
+                Open <ExternalLink className="w-3 h-3" />
+              </span>
+            </div>
+            <div className="mt-6 font-impact uppercase text-3xl tracking-wide">@{IG_HANDLE}</div>
+            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+              Clips from recent sets, behind the decks, and upcoming dates. Follow along to see where
+              I'm playing next.
+            </p>
+            <span className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm shadow-glow group-hover:scale-[1.02] transition">
+              Follow on Instagram <ArrowRight className="w-4 h-4" />
+            </span>
+          </a>
+        </Reveal>
+
+        {/* TikTok live follower embed */}
+        <Reveal delay={0.1}>
+          <div className="glass rounded-2xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-4 px-1">
+              <span className="text-xs uppercase tracking-widest text-primary">TikTok</span>
+              <span className="text-xs text-muted-foreground">
+                live follower count + latest videos
+              </span>
+            </div>
+            <div className="rounded-xl overflow-hidden bg-white/95 min-h-[300px]">
+              <TikTokEmbed />
+            </div>
+            <a
+              href={TT}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-1 text-xs text-primary hover:underline uppercase tracking-wider"
+            >
+              Open TikTok <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}
+
+/* ---------- gear ---------- */
 function Gear() {
   const gear = [
-    { title: "AlphaTheta XDJ-AZ", desc: "Flagship club-level DJ unit." },
-    { title: "JBL Professional Sound", desc: "Full pro audio system." },
-    { title: "Mid Speakers + 18\" Sub", desc: "Two mids and an 18-inch subwoofer." },
+    { title: "AlphaTheta XDJ-AZ", desc: "Flagship club-level DJ unit. My main." },
+    { title: "JBL Professional Sound", desc: "Full pro audio system I bring myself." },
+    { title: 'Mid Speakers + 18" Sub', desc: "Two mids and an 18 inch subwoofer." },
     { title: "Custom Visuals & VFX", desc: "Loops built for every theme." },
   ];
   return (
-    <Section id="gear" eyebrow="Gear" title={<>Pro-grade kit. <span className="text-gradient">Full event experience.</span></>}>
+    <Section
+      id="gear"
+      eyebrow="The rig"
+      title={
+        <>
+          Professional kit for <span className="text-gradient">any room.</span>
+        </>
+      }
+    >
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {gear.map((g) => (
-          <div key={g.title} className="glass rounded-xl p-5 border-l-2 border-l-primary">
-            <Speaker className="w-5 h-5 text-primary mb-3" />
-            <h3 className="font-display font-semibold text-sm">{g.title}</h3>
-            <p className="text-xs text-muted-foreground mt-1">{g.desc}</p>
-          </div>
+        {gear.map((g, i) => (
+          <Reveal key={g.title} delay={i * 0.05}>
+            <div className="glass rounded-xl p-5 h-full border-l-2 border-l-primary">
+              <Speaker className="w-5 h-5 text-primary mb-3" />
+              <h3 className="font-impact uppercase tracking-wide text-sm">{g.title}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{g.desc}</p>
+            </div>
+          </Reveal>
         ))}
       </div>
     </Section>
   );
 }
 
-function Location() {
-  return (
-    <Section id="location" eyebrow="Location" title={<>Grand Rapids based. <span className="text-gradient">Available statewide.</span></>}>
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="glass rounded-xl p-6">
-          <MapPin className="w-5 h-5 text-primary mb-3" />
-          <div className="font-display font-semibold">Based In</div>
-          <div className="text-muted-foreground text-sm mt-1">Grand Rapids, Michigan</div>
-        </div>
-        <div className="glass rounded-xl p-6">
-          <MapPin className="w-5 h-5 text-accent mb-3" />
-          <div className="font-display font-semibold">Originally From</div>
-          <div className="text-muted-foreground text-sm mt-1">Traverse City, Michigan</div>
-        </div>
-        <div className="glass rounded-xl p-6 bg-gradient-to-br from-primary/10 to-accent/10">
-          <Calendar className="w-5 h-5 text-primary mb-3" />
-          <div className="font-display font-semibold">Available For</div>
-          <div className="text-muted-foreground text-sm mt-1">Bars, clubs, private events, and venue opportunities.</div>
-        </div>
-      </div>
-    </Section>
-  );
-}
-
+/* ---------- contact / big CTA ---------- */
 function Contact() {
   return (
-    <Section id="contact" eyebrow="Contact" title={<>Let&apos;s <span className="text-gradient">book a night.</span></>}>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="glass rounded-2xl p-7">
-          <div className="space-y-5">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">Name</div>
-              <div className="font-display font-semibold text-lg">Karl Krusel <span className="text-muted-foreground font-normal">/ KRL</span></div>
-            </div>
-            <a href={`mailto:${EMAIL}`} className="flex items-center gap-3 group">
-              <Mail className="w-5 h-5 text-primary" />
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Email</div>
-                <div className="font-semibold group-hover:text-primary transition">{EMAIL.toLowerCase()}</div>
-              </div>
-            </a>
-            <a href={`tel:${PHONE.replace(/-/g, "")}`} className="flex items-center gap-3 group">
-              <Phone className="w-5 h-5 text-primary" />
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Phone</div>
-                <div className="font-semibold group-hover:text-primary transition">{PHONE}</div>
-              </div>
-            </a>
-            <a href={IG} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-              <Instagram className="w-5 h-5 text-accent" />
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">Instagram</div>
-                <div className="font-semibold group-hover:text-accent transition">@karlkrusel</div>
-              </div>
-            </a>
-            <a href={SC} target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
-              <Music2 className="w-5 h-5 text-accent" />
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">SoundCloud</div>
-                <div className="font-semibold group-hover:text-accent transition">soundcloud.com/karlkrusel</div>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-7 bg-gradient-to-br from-primary/20 via-accent/10 to-background border border-primary/30 shadow-glow flex flex-col justify-between">
-          <div>
-            <h3 className="font-display font-bold text-2xl">Booking Inquiry</h3>
-            <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-              Bars, clubs, private events, weddings, brand activations — reach out with your date, venue,
-              and vibe. I&apos;ll get back with availability and a quick rundown of what I can bring.
-            </p>
-          </div>
-          <a
-            href={`mailto:${EMAIL}?subject=Booking%20Inquiry%20—%20KRL`}
-            className="mt-6 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:scale-[1.02] transition shadow-glow"
-          >
-            <Send className="w-4 h-4" /> Send Booking Inquiry
-          </a>
-        </div>
+    <section id="contact" className="relative overflow-hidden py-24 md:py-36 px-5">
+      <div className="absolute inset-0 z-0">
+        <img
+          src={photo("decks-1074.jpg")}
+          alt=""
+          className="w-full h-full object-cover object-center opacity-30"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/85 to-background" />
+        <div className="absolute inset-0 bg-grid opacity-20" />
       </div>
-    </Section>
+      <div className="relative z-10 mx-auto max-w-4xl text-center">
+        <Reveal>
+          <div className="text-xs uppercase tracking-[0.35em] text-primary mb-4 animate-flicker">
+            Get in touch
+          </div>
+          <h2 className="font-impact uppercase text-5xl md:text-7xl leading-[0.9] text-glow">
+            Book <span className="text-gradient">KRL</span> for your next night
+          </h2>
+          <p className="mt-6 text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Bars, clubs, weddings, brand activations, private parties. Send me your date, venue, and
+            what you have in mind, and I'll follow up with availability and exactly what I can bring
+            to make the night a success.
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.1} className="mt-9 flex flex-wrap justify-center gap-3">
+          <a
+            href={`mailto:${EMAIL}?subject=Booking%20Inquiry%20for%20KRL`}
+            className="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm animate-glow-pulse hover:shadow-glow-strong hover:scale-[1.02] transition"
+          >
+            <Send className="w-4 h-4" /> Send a booking inquiry
+          </a>
+          <a
+            href={`tel:${PHONE.replace(/-/g, "")}`}
+            className="inline-flex items-center gap-2 px-7 py-4 rounded-full glass font-bold uppercase tracking-wider text-sm hover:border-primary/40 transition"
+          >
+            <Phone className="w-4 h-4" /> {PHONE}
+          </a>
+        </Reveal>
+
+        <Reveal
+          delay={0.15}
+          className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm"
+        >
+          <a
+            href={`mailto:${EMAIL}`}
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition"
+          >
+            <Mail className="w-4 h-4 text-primary" /> {EMAIL.toLowerCase()}
+          </a>
+          <a
+            href={IG}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition"
+          >
+            <Instagram className="w-4 h-4 text-accent" /> @{IG_HANDLE}
+          </a>
+          <a
+            href={SC}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition"
+          >
+            <Music2 className="w-4 h-4 text-primary" /> soundcloud.com/karlkrusel
+          </a>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
 function Footer() {
   return (
-    <footer className="border-t border-border py-10 px-5">
+    <footer className="border-t border-primary/15 py-10 px-5">
       <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <div className="tracking-wider">
-          <span style={{ fontFamily: '"Tourner", var(--font-display)' }} className="text-gradient font-bold text-xl">KRL</span> | Karl Krusel | DJ, Sound, and Visuals
+        <div className="tracking-wider flex items-center gap-2">
+          <span
+            style={{ fontFamily: '"Tourner", var(--font-display)' }}
+            className="text-glow font-bold text-xl"
+          >
+            KRL
+          </span>
+          <span className="text-muted-foreground/60">|</span> Karl Krusel · DJ, Sound & Visuals
         </div>
-        <div>© {new Date().getFullYear()} — All rights reserved.</div>
+        <div className="text-xs uppercase tracking-widest">
+          © {new Date().getFullYear()} KRL · Grand Rapids, MI
+        </div>
       </div>
     </footer>
+  );
+}
+
+function ScrollProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const h = document.documentElement;
+        const max = h.scrollHeight - h.clientHeight;
+        setP(max > 0 ? h.scrollTop / max : 0);
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  return (
+    <div className="fixed top-0 inset-x-0 z-[60] h-[3px] pointer-events-none">
+      <div
+        className="scroll-progress h-full w-full"
+        style={{ transform: `scaleX(${p})` }}
+      />
+    </div>
   );
 }
 
 function KRLPortfolio() {
   return (
     <div className="dark min-h-screen bg-background text-foreground">
+      <ScrollProgress />
       <Nav />
       <main>
         <Hero />
+        <Marquee />
         <About />
         <Offer />
+        <Book />
         <Visuals />
         <Videos />
         <Mixes />
+        <Socials />
         <Gear />
-        <Location />
         <Contact />
       </main>
       <Footer />
