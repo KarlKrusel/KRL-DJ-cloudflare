@@ -6,7 +6,6 @@ import {
   Mail,
   Instagram,
   MapPin,
-  Phone,
   Speaker,
   Sparkles,
   Disc3,
@@ -25,7 +24,7 @@ export const Route = createFileRoute("/")({
 
 /* ---------- config you can edit fast ---------- */
 const EMAIL = "KRUSEL.KARL@GMAIL.COM";
-const PHONE = "231-493-1156";
+// const PHONE = "231-493-1156"; // hidden for now
 const IG_HANDLE = "karlkrusel";
 const TT_HANDLE = "karlkrusel"; // KRL on TikTok (DJ KRL)
 const IG = `https://www.instagram.com/${IG_HANDLE}/`;
@@ -470,7 +469,7 @@ function Book() {
   const rows = [
     { venue: "The Grand Woods Lounge", city: "Grand Rapids, MI", tag: "Residency" },
     { venue: "VI Grill", city: "Open format residency", tag: "Residency" },
-    { venue: "The B.O.B.", city: "Grand Rapids, MI", tag: "Open Format" },
+    { venue: "The B.O.B.", city: "Big Old Bass · Grand Rapids, MI", tag: "Bass Night" },
     { venue: "Bars & Nightlife", city: "Across Michigan", tag: "Open Format" },
     { venue: "Weddings & Private Parties", city: "Statewide", tag: "Custom Sets" },
     { venue: "Your Venue Here", city: "Let's make it happen", tag: "Booking Now" },
@@ -961,12 +960,6 @@ function Contact() {
             className="group inline-flex items-center gap-2 px-7 py-4 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm animate-glow-pulse hover:shadow-glow-strong hover:scale-[1.02] transition"
           >
             <Send className="w-4 h-4" /> Send a booking inquiry
-          </a>
-          <a
-            href={`tel:${PHONE.replace(/-/g, "")}`}
-            className="inline-flex items-center gap-2 px-7 py-4 rounded-full glass font-bold uppercase tracking-wider text-sm hover:border-primary/40 transition"
-          >
-            <Phone className="w-4 h-4" /> {PHONE}
           </a>
         </Reveal>
 
