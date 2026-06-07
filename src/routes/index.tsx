@@ -466,13 +466,10 @@ function Offer() {
 
 /* ---------- booking / where I play (the gig-focus centerpiece) ---------- */
 function Book() {
-  const rows = [
-    { venue: "The Grand Woods Lounge", city: "Grand Rapids, MI", tag: "Residency" },
-    { venue: "VI Grill", city: "Open format residency", tag: "Residency" },
-    { venue: "The B.O.B.", city: "Big Old Bass · Grand Rapids, MI", tag: "Bass Night" },
-    { venue: "Bars & Nightlife", city: "Across Michigan", tag: "Open Format" },
-    { venue: "Weddings & Private Parties", city: "Statewide", tag: "Custom Sets" },
-    { venue: "Your Venue Here", city: "Let's make it happen", tag: "Booking Now" },
+  const spots = [
+    { venue: "The Grand Woods Lounge", detail: "Grand Rapids, MI", tag: "Residency" },
+    { venue: "VI Grill", detail: "Open-format residency", tag: "Residency" },
+    { venue: "The B.O.B.", detail: "Big Old Bass · Grand Rapids, MI", tag: "Bass Night" },
   ];
   return (
     <section id="book" className="relative overflow-hidden">
@@ -483,7 +480,7 @@ function Book() {
               <span className="h-px w-8 bg-primary" /> Where I play
             </div>
             <h2 className="font-impact uppercase text-4xl md:text-6xl leading-[0.95] max-w-3xl text-glow">
-              Looking to <span className="text-gradient">book a DJ?</span>
+              Catch me <span className="text-gradient">on the decks.</span>
             </h2>
           </Reveal>
         </div>
@@ -491,36 +488,57 @@ function Book() {
 
       <div className="px-5 pb-24 md:pb-32 -mt-8 relative z-10">
         <div className="mx-auto max-w-6xl">
+          {/* venues I play — credibility, not a booking action */}
           <Reveal className="glass-strong rounded-2xl overflow-hidden divide-y divide-primary/10">
-            {rows.map((r) => (
-              <a
-                key={r.venue}
-                href="#contact"
-                className="group flex items-center justify-between gap-4 px-5 md:px-8 py-5 hover:bg-primary/5 transition"
-              >
-                <div className="min-w-0">
-                  <div className="font-impact uppercase text-lg md:text-2xl tracking-wide truncate group-hover:text-primary transition">
-                    {r.venue}
-                  </div>
-                  <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">
-                    {r.city}
+            {spots.map((s) => (
+              <div key={s.venue} className="flex items-center justify-between gap-4 px-5 md:px-8 py-5">
+                <div className="flex items-center gap-4 min-w-0">
+                  <Disc3
+                    className="hidden sm:block w-6 h-6 text-primary/70 shrink-0 animate-spin"
+                    style={{ animationDuration: "8s" }}
+                  />
+                  <div className="min-w-0">
+                    <div className="font-impact uppercase text-lg md:text-2xl tracking-wide truncate">
+                      {s.venue}
+                    </div>
+                    <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">
+                      {s.detail}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <span className="hidden sm:inline text-[10px] md:text-xs uppercase tracking-widest text-primary border border-primary/40 rounded-full px-3 py-1">
-                    {r.tag}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs md:text-sm font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition">
-                    Inquire <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-                  </span>
-                </div>
-              </a>
+                <span className="shrink-0 text-[10px] md:text-xs uppercase tracking-widest text-primary border border-primary/40 rounded-full px-3 py-1">
+                  {s.tag}
+                </span>
+              </div>
             ))}
           </Reveal>
-          <Reveal delay={0.1} className="mt-6 text-center">
+
+          <Reveal delay={0.05} className="mt-4 text-center">
             <p className="text-sm text-muted-foreground">
-              Have a date and venue in mind? Reach out and we'll lock in the details.
+              Plus bars, clubs, weddings, and private events all over Michigan.
             </p>
+          </Reveal>
+
+          {/* the one clear booking action */}
+          <Reveal delay={0.1} className="mt-10">
+            <div className="rounded-2xl p-7 md:p-10 bg-gradient-to-br from-primary/15 via-accent/5 to-background border border-primary/30 ring-glow flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <h3 className="font-impact uppercase text-2xl md:text-4xl tracking-wide">
+                  Want KRL at <span className="text-gradient">your spot?</span>
+                </h3>
+                <p className="text-muted-foreground mt-3 max-w-xl leading-relaxed">
+                  Bars, clubs, weddings, private parties, and brand nights. Send me your date and
+                  venue and I'll check availability and put a plan together.
+                </p>
+              </div>
+              <a
+                href="#contact"
+                className="group shrink-0 inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm animate-glow-pulse hover:shadow-glow-strong hover:scale-[1.02] transition"
+              >
+                Check availability
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+              </a>
+            </div>
           </Reveal>
         </div>
       </div>
@@ -834,14 +852,14 @@ function Socials() {
         </>
       }
     >
-      <div className="grid md:grid-cols-2 gap-6 items-start">
+      <div className="grid md:grid-cols-2 gap-6 items-stretch">
         {/* Instagram follow card */}
-        <Reveal>
+        <Reveal className="h-full">
           <a
             href={IG}
             target="_blank"
             rel="noreferrer"
-            className="group block glass rounded-2xl p-7 hover:border-accent/50 transition h-full"
+            className="group flex flex-col h-full glass rounded-2xl p-7 hover:border-accent/50 transition"
           >
             <div className="flex items-center justify-between">
               <div
@@ -859,22 +877,25 @@ function Socials() {
               Clips from recent sets, behind the decks, and upcoming dates. Follow along to see where
               I'm playing next.
             </p>
-            <span className="mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider text-sm shadow-glow group-hover:scale-[1.02] transition">
-              Follow on Instagram <ArrowRight className="w-4 h-4" />
+            <span
+              className="mt-auto flex w-full items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-white font-bold uppercase tracking-wider text-sm transition group-hover:scale-[1.02] group-hover:brightness-110"
+              style={{ background: "linear-gradient(135deg,#feda75,#d62976,#962fbf,#4f5bd5)" }}
+            >
+              <Instagram className="w-4 h-4" /> Follow on Instagram
             </span>
           </a>
         </Reveal>
 
         {/* TikTok live follower embed */}
-        <Reveal delay={0.1}>
-          <div className="glass rounded-2xl p-4 sm:p-6">
+        <Reveal delay={0.1} className="h-full">
+          <div className="flex flex-col h-full glass rounded-2xl p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4 px-1">
               <span className="text-xs uppercase tracking-widest text-primary">TikTok</span>
               <span className="text-xs text-muted-foreground">
                 live follower count + latest videos
               </span>
             </div>
-            <div className="rounded-xl overflow-hidden bg-white/95 min-h-[300px]">
+            <div className="flex-1 rounded-xl overflow-hidden bg-white/95 min-h-[300px]">
               <TikTokEmbed />
             </div>
             <a

@@ -7,7 +7,7 @@
 @font-face {
   font-family: "Tourner";
   src: url("/fonts/Tourner.ttf") format("truetype");
-  font-display: swap;
+  font-display: block;
 }
 
 @theme inline {

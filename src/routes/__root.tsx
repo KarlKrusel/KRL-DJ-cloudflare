@@ -95,6 +95,7 @@ function RootComponent() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="/photos/hero-1073.jpg" />
         <meta name="theme-color" content="#05140a" />
+        <link rel="preload" href="/fonts/Tourner.ttf" as="font" type="font/ttf" crossOrigin="" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
