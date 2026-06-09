@@ -116,6 +116,7 @@ function Nav() {
     ["Videos", "#videos"],
     ["Mixes", "#mixes"],
     ["Socials", "#socials"],
+    ["SnagTrack", "/snagtrack"],
   ];
   return (
     <header className="fixed top-0 inset-x-0 z-50 glass-strong border-b border-primary/15">

@@ -311,6 +311,17 @@
   animation: glow-pulse 2.8s ease-in-out infinite;
 }
 
+/* steady CTA glow that brightens smoothly on hover (no pulse jitter) */
+.cta-glow {
+  box-shadow: var(--shadow-glow);
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+}
+.cta-glow:hover {
+  box-shadow: var(--shadow-glow-strong);
+}
+
 /* drifting hero orb */
 @keyframes drift {
   0% {
