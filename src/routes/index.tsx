@@ -235,9 +235,7 @@ function Hero() {
           Open-format DJ. <span className="text-gradient">Professional sound. A full dance floor.</span>
         </p>
         <p className="mt-5 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
-          I'm Karl Krusel, known as KRL. A Grand Rapids based DJ, originally from Traverse City. I bring
-          my own professional rig, read the room, and keep the energy right all night, whether it's a
-          bar, a club, a wedding, or a private event.
+          I'm Karl Krusel, known as KRL. Grand Rapids based, originally from Traverse City. I bring my own professional rig, read the room, and keep the energy right all night. Bars, clubs, weddings, private events. Whatever the night calls for.
         </p>
 
         <div className="mt-9 flex flex-wrap gap-3">
@@ -376,13 +374,13 @@ function About() {
         <Reveal delay={0.1} className="space-y-5 text-muted-foreground leading-relaxed">
           <p className="text-lg text-foreground/90">
             I've been DJing for about five years, the last one professionally. Bass and dubstep are
-            what I love most, but the majority of my work is open-format, which means I can play to
-            any crowd. Younger or older, I read what the room responds to and build the set around it.
+            what I love most, but most of my work is open-format. I can play to any crowd. Younger,
+            older, it doesn't matter. I read what the room responds to and build the set from there.
           </p>
           <p>
-            Top hits, house, drum and bass, dubstep, and throwbacks, whatever fits the night. I hold a
+            Top hits, house, drum and bass, dubstep, throwbacks. Whatever fits the night. I hold a
             residency at The Grand Woods Lounge in Grand Rapids and play bars and events across
-            Michigan. My focus stays on the crowd and the energy in the room, not on my screen.
+            Michigan. My focus stays on the crowd, not my screen.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             {[
@@ -409,27 +407,27 @@ const offerings = [
   {
     icon: Disc3,
     title: "Open-Format Sets",
-    desc: "Blending genres in real time to match the energy of the room.",
+    desc: "I blend genres in real time based on what the room is doing. No fixed setlist.",
   },
   {
     icon: Music2,
     title: "Bars & Clubs",
-    desc: "High-energy nightlife sets built to pack the floor and keep it moving.",
+    desc: "High-energy sets built to keep the floor packed from open to close.",
   },
   {
     icon: Calendar,
     title: "Private Events",
-    desc: "Weddings, parties, and corporate nights, tailored to your crowd.",
+    desc: "Weddings, parties, corporate nights. I tailor the set to your crowd and your vibe.",
   },
   {
     icon: Headphones,
     title: "Every Genre",
-    desc: "House, drum and bass, dubstep, top hits, and throwbacks.",
+    desc: "House, drum and bass, dubstep, top hits, throwbacks. I've got it covered.",
   },
   {
     icon: Speaker,
     title: "Pro JBL Sound",
-    desc: "I bring my own full sound system. Two mids plus an 18 inch sub.",
+    desc: "I bring my own full sound system. Two mids and an 18 inch sub.",
   },
   {
     icon: Sparkles,
@@ -527,8 +525,8 @@ function Book() {
                   Want KRL at <span className="text-gradient">your spot?</span>
                 </h3>
                 <p className="text-muted-foreground mt-3 max-w-xl leading-relaxed">
-                  Bars, clubs, weddings, private parties, and brand nights. Send me your date and
-                  venue and I'll check availability and put a plan together.
+                  Bars, clubs, weddings, private parties, brand nights. Send me your date and
+                  venue and I'll check availability and put something together.
                 </p>
               </div>
               <a
@@ -585,29 +583,29 @@ function Visuals() {
       }
     >
       <p className="text-muted-foreground max-w-3xl mb-10 leading-relaxed">
-        I create custom visual loops that run on venue TVs, projectors, and screens during a set. I
-        can build them around a holiday, a theme, your event, your logo, or your brand, so every part
-        of the room works together, from the music to the screens.
+        I build custom visual loops that run on venue TVs, projectors, and screens during a set. I
+        can design them around a holiday, a theme, your event, your logo, or your brand. Everything
+        in the room works together, from the music to the screens.
       </p>
       <div className="grid md:grid-cols-3 gap-5">
         <Reveal>
           <VisualCard
             title="St. Patrick's Day Loop"
-            desc="Themed holiday visuals blending the venue logo and KRL branding into a green-soaked loop."
+            desc="Holiday visuals with the venue logo and KRL branding built into a themed green loop."
             src={vid("krl_saint_paddies_v2_tv_loop_30s_falling_soft.mp4")}
           />
         </Reveal>
         <Reveal delay={0.05}>
           <VisualCard
             title="Branded Venue Loop"
-            desc="Custom visuals built around your logo and brand identity."
+            desc="Custom visuals built around your logo and brand."
             src={vid("woods_logo_sample_krl.mp4")}
           />
         </Reveal>
         <Reveal delay={0.1}>
           <VisualCard
             title="Cosmic Gradient Loop"
-            desc="Abstract VFX for immersive event atmospheres."
+            desc="Abstract VFX for when you want the atmosphere to feel immersive."
             src={vid("KRL_cosmic_gradient.mp4")}
           />
         </Reveal>
@@ -801,7 +799,7 @@ function Mixes() {
             <div>
               <div className="font-impact uppercase tracking-wide">More Mixes</div>
               <div className="text-sm text-muted-foreground mt-1">
-                The full catalogue lives on SoundCloud
+                Everything else is on SoundCloud.
               </div>
             </div>
             <span className="inline-flex items-center gap-1 text-xs text-primary group-hover:underline uppercase tracking-wider">
@@ -874,8 +872,7 @@ function Socials() {
             </div>
             <div className="mt-6 font-impact uppercase text-3xl tracking-wide">@{IG_HANDLE}</div>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Clips from recent sets, behind the decks, and upcoming dates. Follow along to see where
-              I'm playing next.
+              Clips from sets, behind the decks, and upcoming dates. Follow to see where I'm playing next.
             </p>
             <span
               className="mt-auto flex w-full items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-white font-bold uppercase tracking-wider text-sm transition group-hover:scale-[1.02] group-hover:brightness-110"
@@ -916,10 +913,10 @@ function Socials() {
 /* ---------- gear ---------- */
 function Gear() {
   const gear = [
-    { title: "AlphaTheta XDJ-AZ", desc: "Flagship club-level DJ unit. My main." },
-    { title: "JBL Professional Sound", desc: "Full pro audio system I bring myself." },
+    { title: "AlphaTheta XDJ-AZ", desc: "Flagship club-level controller. My main setup." },
+    { title: "JBL Professional Sound", desc: "Full pro audio system I bring to every show." },
     { title: 'Mid Speakers + 18" Sub', desc: "Two mids and an 18 inch subwoofer." },
-    { title: "Custom Visuals & VFX", desc: "Loops built for every theme." },
+    { title: "Custom Visuals & VFX", desc: "Loops built for your theme and your room." },
   ];
   return (
     <Section
@@ -969,9 +966,9 @@ function Contact() {
             Book <span className="text-gradient">KRL</span> for your next night
           </h2>
           <p className="mt-6 text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Bars, clubs, weddings, brand activations, private parties. Send me your date, venue, and
-            what you have in mind, and I'll follow up with availability and exactly what I can bring
-            to make the night a success.
+            Bars, clubs, weddings, brand nights, private parties. Send me your date, venue, and
+            what you have in mind. I'll get back to you with availability and what I can bring to
+            make it a good night.
           </p>
         </Reveal>
 
