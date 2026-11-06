@@ -531,7 +531,59 @@
   font-size: 12px;
   line-height: 1.6;
 }
-.media-play,
+.media-frame video {
+  cursor: pointer;
+}
+/* big tap-to-play button over the poster */
+.media-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(0deg, oklch(8% 0 0 / 0.45), oklch(8% 0 0 / 0.1));
+  transition: background 0.2s;
+}
+.media-overlay:hover {
+  background: linear-gradient(0deg, oklch(8% 0 0 / 0.55), oklch(8% 0 0 / 0.2));
+}
+.play-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 30px oklch(86% 0.24 146 / 0.35);
+  transition: transform 0.2s;
+}
+.play-badge svg {
+  margin-left: 3px;
+}
+.media-overlay:hover .play-badge {
+  transform: scale(1.06);
+}
+.play-badge.is-loading {
+  background: oklch(10% 0 0 / 0.7);
+  box-shadow: none;
+}
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid oklch(97% 0 0 / 0.25);
+  border-top-color: var(--primary);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.media-pause,
 .media-audio {
   z-index: 3;
   position: absolute;
@@ -545,7 +597,7 @@
   background: var(--background);
   color: var(--foreground);
 }
-.media-play {
+.media-pause {
   left: 12px;
 }
 .media-audio {
@@ -553,13 +605,14 @@
 }
 .media-error {
   position: absolute;
-  top: 12px;
   left: 12px;
-  z-index: 3;
+  right: 12px;
+  bottom: 56px;
   background: var(--background);
   color: var(--muted-foreground);
   font-size: 12px;
   padding: 8px 12px;
+  text-align: center;
 }
 .photo-open {
   display: block;

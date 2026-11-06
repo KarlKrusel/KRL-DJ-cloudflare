@@ -33,7 +33,8 @@ const IG = `https://www.instagram.com/${IG_HANDLE}/`;
 const TT = `https://www.tiktok.com/@${TT_HANDLE}`;
 const SC = "https://soundcloud.com/karlkrusel";
 
-const vid = (file: string) => `https://pub-2b79e8df89e84e759954039d570bd5c7.r2.dev/${file}`;
+/* web-sized videos (720p, fast start) served from this site */
+const vid = (file: string) => `/videos/web/${file}`;
 const poster = (file: string) => `/videos/${file}`;
 const photo = (file: string) => `/photos/${file}`;
 
@@ -121,6 +122,7 @@ type MediaItem = {
   src: string;
   poster: string;
   orientation: "portrait" | "landscape";
+  hasAudio?: boolean;
 };
 
 const LIVE: MediaItem[] = [
@@ -130,6 +132,7 @@ const LIVE: MediaItem[] = [
     src: vid("grand_woods_lounge.mp4"),
     poster: poster("poster_grand_woods_lounge.jpg"),
     orientation: "portrait",
+    hasAudio: true,
   },
   {
     id: "crowd-reaction",
@@ -137,6 +140,7 @@ const LIVE: MediaItem[] = [
     src: vid("crowd_reaction.mp4"),
     poster: poster("poster_crowd_reaction.jpg"),
     orientation: "portrait",
+    hasAudio: true,
   },
   {
     id: "behind-decks",
@@ -144,6 +148,7 @@ const LIVE: MediaItem[] = [
     src: vid("behind_the_decks.mp4"),
     poster: poster("poster_behind_the_decks.jpg"),
     orientation: "portrait",
+    hasAudio: true,
   },
   {
     id: "crowd-clip",
@@ -151,6 +156,7 @@ const LIVE: MediaItem[] = [
     src: vid("crowd_clip.mp4"),
     poster: poster("poster_crowd_clip.jpg"),
     orientation: "portrait",
+    hasAudio: true,
   },
 ];
 
@@ -384,10 +390,11 @@ function Marquee() {
   return (
     <div className="marquee" aria-label={MARQUEE.join(", ")}>
       <div className="marquee-track" aria-hidden="true">
+        {/* two identical copies, each wide enough to cover big monitors, so the loop never shows a gap */}
         {[0, 1].map((copy) => (
           <div className="marquee-copy" key={copy}>
-            {MARQUEE.map((t) => (
-              <span key={t}>{t}</span>
+            {[...MARQUEE, ...MARQUEE, ...MARQUEE].map((t, i) => (
+              <span key={`${t}-${i}`}>{t}</span>
             ))}
           </div>
         ))}
@@ -397,112 +404,120 @@ function Marquee() {
 }
 
 /* =====================================================================
-   VIDEO: loads only when on screen, one video plays at a time
+   VIDEO: nothing autoplays. Tap a video to play it; only one plays at a
+   time, and a video pauses when it's scrolled out of view.
    ===================================================================== */
 let activeVideo: HTMLVideoElement | null = null;
 
-function releaseVideo(v: HTMLVideoElement) {
-  v.pause();
-  v.removeAttribute("src");
-  v.load();
-}
+type PlayState = "idle" | "loading" | "playing" | "paused" | "error";
 
 function MediaFrame({ item }: { item: MediaItem }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [muted, setMuted] = useState(true);
-  const [paused, setPaused] = useState(false);
-  const [error, setError] = useState(false);
+  const [state, setState] = useState<PlayState>("idle");
+  const [muted, setMuted] = useState(!item.hasAudio);
 
-  const start = (v: HTMLVideoElement) => {
-    if (activeVideo && activeVideo !== v) releaseVideo(activeVideo);
+  const play = () => {
+    const v = ref.current;
+    if (!v) return;
+    if (activeVideo && activeVideo !== v) activeVideo.pause();
     activeVideo = v;
-    if (!v.getAttribute("src")) {
+    if (state === "error" || !v.getAttribute("src")) {
       v.src = item.src;
       v.load();
     }
-    v.muted = true;
-    setMuted(true);
-    setError(false);
-    v.play()
-      .then(() => setPaused(false))
-      .catch(() => setPaused(true));
+    v.muted = muted;
+    setState("loading");
+    v.play().catch((err: DOMException) => {
+      if (err?.name === "NotAllowedError" && !v.muted) {
+        // browser blocked sound: play muted instead
+        v.muted = true;
+        setMuted(true);
+        v.play().catch(() => setState("paused"));
+      } else if (err?.name !== "AbortError") {
+        setState("error");
+      }
+    });
   };
 
+  const toggle = () => {
+    const v = ref.current;
+    if (!v) return;
+    if (state === "playing" || state === "loading") v.pause();
+    else play();
+  };
+
+  /* pause when the video is scrolled away (up/down or sideways in a rail) */
   useEffect(() => {
     const v = ref.current;
     if (!v || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry) return;
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6 && !reduce) start(v);
-        else if (activeVideo === v) {
-          releaseVideo(v);
-          activeVideo = null;
-          setLoaded(false);
-        }
+        if (entry && entry.intersectionRatio < 0.35 && !v.paused) v.pause();
       },
-      { threshold: [0, 0.6] },
+      { threshold: [0, 0.35] },
     );
     io.observe(v);
     return () => {
       io.disconnect();
-      releaseVideo(v);
+      v.pause();
       if (activeVideo === v) activeVideo = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.src]);
+  }, []);
 
-  const showPlay = paused || !loaded;
+  const showOverlay = state !== "playing";
   return (
     <div className={`media-frame ${item.orientation}`}>
-      {!loaded && <img src={item.poster} alt="" loading="lazy" />}
       <video
         ref={ref}
         poster={item.poster}
         loop
-        muted
         playsInline
         preload="none"
         aria-label={item.title}
-        onLoadedData={() => setLoaded(true)}
-        onEmptied={() => setLoaded(false)}
-        onPause={() => setPaused(true)}
-        onPlay={() => setPaused(false)}
-        onError={() => {
-          setError(true);
-          setLoaded(false);
-        }}
+        onClick={toggle}
+        onPlaying={() => setState("playing")}
+        onWaiting={() => setState("loading")}
+        onPause={() => setState((s) => (s === "error" ? s : "paused"))}
+        onError={() => setState("error")}
       />
-      <button
-        type="button"
-        className="media-play"
-        aria-label={`${showPlay ? "Play" : "Pause"} ${item.title}`}
-        onClick={() => {
-          const v = ref.current;
-          if (!v) return;
-          if (v.paused || !v.getAttribute("src")) start(v);
-          else v.pause();
-        }}
-      >
-        {showPlay ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-      </button>
-      <button
-        type="button"
-        className="media-audio"
-        aria-label={`${muted ? "Unmute" : "Mute"} ${item.title}`}
-        onClick={() => {
-          const v = ref.current;
-          if (!v) return;
-          if (!v.getAttribute("src")) start(v);
-          v.muted = !muted;
-          setMuted(!muted);
-        }}
-      >
-        {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-      </button>
-      {error && <span className="media-error">Video didn't load. Tap play to try again.</span>}
+      {showOverlay && (
+        <button
+          type="button"
+          className="media-overlay"
+          aria-label={`${state === "paused" ? "Resume" : "Play"} ${item.title}`}
+          onClick={toggle}
+        >
+          <span className={`play-badge ${state === "loading" ? "is-loading" : ""}`}>
+            {state === "loading" ? <span className="spinner" /> : <Play className="w-6 h-6" />}
+          </span>
+          {state === "error" && <span className="media-error">Video didn't load. Tap to try again.</span>}
+        </button>
+      )}
+      {state === "playing" && (
+        <button
+          type="button"
+          className="media-pause"
+          aria-label={`Pause ${item.title}`}
+          onClick={toggle}
+        >
+          <Pause className="w-4 h-4" />
+        </button>
+      )}
+      {item.hasAudio && (
+        <button
+          type="button"
+          className="media-audio"
+          aria-label={`${muted ? "Unmute" : "Mute"} ${item.title}`}
+          onClick={() => {
+            const v = ref.current;
+            const next = !muted;
+            if (v) v.muted = next;
+            setMuted(next);
+          }}
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+      )}
     </div>
   );
 }
