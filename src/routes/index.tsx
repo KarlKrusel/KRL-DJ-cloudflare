@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Carousel } from "@/components/Carousel";
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import {
   ArrowRight,
@@ -197,9 +198,48 @@ const VISUALS: MediaItem[] = [
 
 /* Screen Show demo: set `src` to the demo video when it's ready */
 const SCREENSHOW_DEMO = {
-  src: "",
-  poster: poster("poster_woods_logo_sample_krl.jpg"),
+  src: vid("screenshow_demo.mp4"),
+  poster: "/screenshow/demo_poster.jpg",
 };
+
+/* Screen Show stills: add one line per image (drop the file in /public/screenshow) */
+const STILLS: { id: string; title: string; caption: string; src: string; alt: string }[] = [
+  {
+    id: "control-live",
+    title: "Performance control",
+    caption: "Songs analyzed live over Pro DJ Link, with the next drop counted down. Live demo on inquiry.",
+    src: "/screenshow/control-live.webp",
+    alt: "Screen Show performance control: a track analyzed live over Pro DJ Link",
+  },
+  {
+    id: "krl-green",
+    title: "KRL Green Vortex",
+    caption: "The KRL mark over a live generative scene.",
+    src: "/screenshow/krl-green.webp",
+    alt: "Neon green and yellow generative visual with the KRL logo",
+  },
+  {
+    id: "rr-blue",
+    title: "Rapid River, Cyan",
+    caption: "Venue branding with a colour palette that matches the room.",
+    src: "/screenshow/rapid-river-blue.webp",
+    alt: "Cyan and blue generative visual with the Rapid River logo",
+  },
+  {
+    id: "rr-green",
+    title: "Rapid River, Green",
+    caption: "Same logo, different palette. Colours rotate through the night.",
+    src: "/screenshow/rapid-river-green.webp",
+    alt: "Green generative visual with the Rapid River logo",
+  },
+  {
+    id: "control-rendered",
+    title: "Scene library",
+    caption: "100+ rendered scenes, searchable and ready to take live.",
+    src: "/screenshow/control-rendered.webp",
+    alt: "Screen Show performance control showing the rendered scene library",
+  },
+];
 
 const PHOTOS = [
   { id: "hero", title: "Live at the decks", src: photo("hero-1073.jpg"), alt: "KRL DJing at a packed show", width: 2048, height: 1363 },
@@ -261,7 +301,7 @@ function Hero() {
         <div className="flex items-center gap-3 mb-5">
           <Equalizer />
           <span className="text-xs uppercase tracking-[0.35em] text-primary animate-flicker">
-            Now booking 2026
+            Now booking 2027
           </span>
         </div>
 
@@ -464,12 +504,24 @@ function MediaFrame({ item }: { item: MediaItem }) {
     };
   }, []);
 
+  /* only fetch a poster once the card is near the viewport, so big galleries stay fast */
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v || typeof IntersectionObserver === "undefined") return setNear(true);
+    const io = new IntersectionObserver(([e]) => e?.isIntersecting && (setNear(true), io.disconnect()), {
+      rootMargin: "0px 600px 600px 600px",
+    });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
   const showOverlay = state !== "playing";
   return (
     <div className={`media-frame ${item.orientation}`}>
       <video
         ref={ref}
-        poster={item.poster}
+        poster={near ? item.poster : undefined}
         loop
         playsInline
         preload="none"
@@ -522,46 +574,19 @@ function MediaFrame({ item }: { item: MediaItem }) {
   );
 }
 
-function RailArrows({
-  target,
-  label,
-  className = "",
-}: {
-  target: React.RefObject<HTMLDivElement | null>;
-  label: string;
-  className?: string;
-}) {
-  const scroll = (dir: 1 | -1) =>
-    target.current?.scrollBy({ left: dir * target.current.clientWidth * 0.65, behavior: "smooth" });
-  return (
-    <div className={`gallery-arrows ${className}`}>
-      <button type="button" className="arrow-control" aria-label={`Previous ${label}`} onClick={() => scroll(-1)}>
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-      <button type="button" className="arrow-control" aria-label={`Next ${label}`} onClick={() => scroll(1)}>
-        <ChevronRight className="w-4 h-4" />
-      </button>
-    </div>
-  );
-}
-
 function VideoRail({ items, label, className = "" }: { items: MediaItem[]; label: string; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
   return (
-    <div>
-      <RailArrows target={ref} label={label} className="rail-arrows" />
-      <div ref={ref} className={`media-rail ${className}`} aria-label={label}>
-        {items.map((item) => (
-          <article key={item.id} className={item.orientation === "portrait" ? "live-item" : "visual-item"}>
-            <MediaFrame item={item} />
-            <div className="media-meta">
-              <h3>{item.title}</h3>
-              {item.caption && <p>{item.caption}</p>}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
+    <Carousel label={label} className={className}>
+      {items.map((item) => (
+        <article key={item.id} className={item.orientation === "portrait" ? "live-item" : "visual-item"}>
+          <MediaFrame item={item} />
+          <div className="media-meta">
+            <h3>{item.title}</h3>
+            {item.caption && <p>{item.caption}</p>}
+          </div>
+        </article>
+      ))}
+    </Carousel>
   );
 }
 
@@ -628,6 +653,39 @@ function About() {
   );
 }
 
+/* Screen Show demo: muted, looping, and already playing by the time it scrolls into view */
+function DemoVideo({ src, poster }: { src: string; poster: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) v.play().catch(() => {});
+        else v.pause();
+      },
+      { rootMargin: "1500px 0px 1500px 0px" },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="auto"
+      aria-label="Screen Show demo"
+      onClick={(e) => (e.currentTarget.paused ? e.currentTarget.play() : e.currentTarget.pause())}
+    />
+  );
+}
+
 function ScreenShow() {
   const benefits = [
     {
@@ -650,33 +708,25 @@ function ScreenShow() {
           <div className="screen-brand">
             Screen<span>Show</span>
           </div>
-          <span className="screen-badge">Live visuals by KRL</span>
+          <span className="screen-badge">Live visuals by KRL · Patent pending</span>
         </div>
 
         <div className="demo">
           {SCREENSHOW_DEMO.src ? (
-            <MediaFrame
-              item={{
-                id: "demo",
-                title: "Screen Show demo",
-                src: SCREENSHOW_DEMO.src,
-                poster: SCREENSHOW_DEMO.poster,
-                orientation: "landscape",
-              }}
-            />
+            <DemoVideo src={SCREENSHOW_DEMO.src} poster={SCREENSHOW_DEMO.poster} />
           ) : (
             <>
               <img
                 src={SCREENSHOW_DEMO.poster}
-                alt="A Grand Woods Lounge branded visual loop on the venue screens"
-                width={1280}
-                height={720}
+                alt="Screen Show performance control: a track analyzed live over Pro DJ Link, with the next drop counted down"
+                width={2000}
+                height={1301}
                 loading="lazy"
               />
-              <span className="demo-mark">Demo coming soon</span>
+              <span className="demo-mark">Live demo on inquiry</span>
               <div className="demo-label">
-                <strong>Screen Show live demo</strong>
-                <p>Full demo video on the way.</p>
+                <strong>Performance control</strong>
+                <p>Songs analyzed live over Pro DJ Link, with the next drop counted down on screen.</p>
               </div>
             </>
           )}
@@ -714,14 +764,22 @@ function ScreenShow() {
         </a>
 
         <div className="loop-heading">
-          <h3>A few looks from the screens</h3>
-          <p>
-            I build custom visual loops that run on venue TVs, projectors, and screens during a set.
-            I can design them around a holiday, a theme, your event, your logo, or your brand.
-            Everything in the room works together, from the music to the screens.
-          </p>
+          <h3>Stills from the screens</h3>
+          <p>Generative scenes with your logo and colours, and the control surface that runs them.</p>
         </div>
-        <VideoRail items={VISUALS} label="Screen Show example loops" className="loop-rail" />
+        <Carousel label="Screen Show stills" className="loop-rail">
+          {STILLS.map((st) => (
+            <article key={st.id} className="visual-item">
+              <div className="media-frame landscape">
+                <img src={st.src} alt={st.alt} width={2000} height={1301} loading="lazy" decoding="async" />
+              </div>
+              <div className="media-meta">
+                <h3>{st.title}</h3>
+                <p>{st.caption}</p>
+              </div>
+            </article>
+          ))}
+        </Carousel>
       </div>
     </section>
   );
@@ -730,7 +788,6 @@ function ScreenShow() {
 function Media({ onPhoto }: { onPhoto: (index: number, el: HTMLElement) => void }) {
   const tabs = ["Live", "Photos", "Visuals"] as const;
   const [tab, setTab] = useState<(typeof tabs)[number]>("Live");
-  const photoRail = useRef<HTMLDivElement>(null);
   return (
     <section id="media" className="site-width section-space">
       <div className="reveal">
@@ -759,12 +816,11 @@ function Media({ onPhoto }: { onPhoto: (index: number, el: HTMLElement) => void 
             </button>
           ))}
         </div>
-        {tab === "Photos" && <RailArrows target={photoRail} label="photos" />}
       </div>
 
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === "Photos" ? (
-          <div className="media-rail" ref={photoRail} aria-label="Photos">
+          <Carousel label="photos">
             {PHOTOS.map((p, i) => (
               <article key={p.id} className="photo-item">
                 <button
@@ -780,7 +836,7 @@ function Media({ onPhoto }: { onPhoto: (index: number, el: HTMLElement) => void 
                 </div>
               </article>
             ))}
-          </div>
+          </Carousel>
         ) : (
           <VideoRail
             key={tab}
